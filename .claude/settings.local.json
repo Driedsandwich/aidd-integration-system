@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(time npm run build)",
+      "Bash(for i in {1..5})",
+      "Bash(done)",
+      "Bash(awk:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh workflow:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(npm install:*)",
+      "Bash(surge:*)",
+      "Bash(ipconfig)",
+      "Bash(ip addr:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
