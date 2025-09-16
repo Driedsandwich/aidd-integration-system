@@ -1,0 +1,74 @@
+name: Sync GitHub Issues to Notion
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled, closed, reopened]
+
+permissions:
+  issues: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync issue to Notion
+        uses: actions/github-script@v7
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_TASKS_ID: ${{ secrets.NOTION_DB_TASKS_ID }}
+        with:
+          script: |
+            const fetch = global.fetch;
+            const issue = context.payload.issue;
+            if (!process.env.NOTION_TOKEN || !process.env.NOTION_DB_TASKS_ID) {
+              core.setFailed('Missing NOTION_TOKEN or NOTION_DB_TASKS_ID');
+              return;
+            }
+            const notionHeaders = {
+              'Authorization': `Bearer ${process.env.NOTION_TOKEN}`,
+              'Content-Type': 'application/json',
+              'Notion-Version': '2022-06-28'
+            };
+            // Find matching Notion task by ghIssueId or ghIssueNumber
+            const queryPayload = {
+              filter: {
+                or: [
+                  { property: 'ghIssueId', number: { equals: issue.id } },
+                  { property: 'ghIssueNumber', number: { equals: issue.number } }
+                ]
+              },
+              page_size: 1
+            };
+            const qRes = await fetch(`https://api.notion.com/v1/databases/${process.env.NOTION_DB_TASKS_ID}/query`, {
+              method: 'POST', headers: notionHeaders, body: JSON.stringify(queryPayload)
+            });
+            if (!qRes.ok) {
+              core.setFailed(`Notion query failed: ${qRes.status} ${await qRes.text()}`);
+              return;
+            }
+            const q = await qRes.json();
+            if (!q.results || q.results.length === 0) {
+              core.info('No matching Notion task. Skipping.');
+              return;
+            }
+            const pageId = q.results[0].id;
+            // Map state to Notion Status
+            const statusName = issue.state === 'closed' ? 'Done' : 'In Progress';
+            // Labels -> multi_select
+            const labels = (issue.labels || []).map(l => ({ name: (typeof l === 'string' ? l : l.name) }));
+            const properties = {
+              ghIssueId: { number: issue.id },
+              ghIssueNumber: { number: issue.number },
+              ghIssueUrl: { url: issue.html_url },
+              ghLabels: { multi_select: labels },
+              SyncState: { select: { name: 'linked' } },
+              Status: { select: { name: statusName } }
+            };
+            const pRes = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+              method: 'PATCH', headers: notionHeaders, body: JSON.stringify({ properties })
+            });
+            if (!pRes.ok) {
+              core.setFailed(`Notion patch failed: ${pRes.status} ${await pRes.text()}`);
+              return;
+            }
+            core.info(`Updated Notion page ${pageId} for issue #${issue.number}`);
