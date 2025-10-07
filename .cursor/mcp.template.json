@@ -1,4 +1,35 @@
 {
+  "mcpServers": {
+    "github": {
+      "command": "npx.cmd",
+      "args": ["-y", "@modelcontextprotocol/server-github@<PINNED_VERSION>"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<SET_YOUR_TOKEN>"
+      }
+    },
+    "notion": {
+      "command": "npx.cmd",
+      "args": ["-y", "@notionhq/notion-mcp-server@<PINNED_VERSION>"],
+      "env": {
+        "NOTION_TOKEN": "<SET_YOUR_TOKEN>"
+      }
+    },
+    "fetch": {
+      "command": "npx.cmd",
+      "args": ["-y", "fetch-mcp", "stdio"]
+    }
+    
+    /*
+    Optional servers (decide per environment):
+    "time": {
+      "command": "npx.cmd",
+      "args": ["-y", "mcp-server-time", "--local-timezone=Asia/Tokyo"]
+    }
+    */
+  }
+}
+
+{
   "env": {
     "OPENAI_API_KEY": "",
     "ANTHROPIC_API_KEY": "",
