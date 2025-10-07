@@ -145,3 +145,13 @@ node_modules/
 /temp_config.json
 # 誤生成ファイル（タイポ対策）
 /tatus --porcelain
+
+# Node/Next.js ビルド成果物（任意階層）
+**/node_modules/
+**/.next/
+**/out/
+**/.turbo/
+**/.vercel/
+**/.cache/
+**/coverage/
+*.tsbuildinfo
