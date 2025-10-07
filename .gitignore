@@ -155,3 +155,7 @@ node_modules/
 **/.cache/
 **/coverage/
 *.tsbuildinfo
+
+# Local appdata/editor dirs (root)
+/%APPDATA%/
+/.claude/
