@@ -1,0 +1,29 @@
+---
+description: ワークスペース整理ルール - プロジェクト境界の維持と散乱防止
+globs: '**/*'
+alwaysApply: true
+---
+
+- **プロジェクト配置（必須）**
+  - すべてのプロジェクトは`projects/<name>/`配下に配置する
+  - ルート直下に新規コードディレクトリを作らない
+
+- **ドキュメント整理**
+  - 共通ドキュメントは`docs/`、履歴は`docs/archive/`
+  - 無関係コンテンツは`docs/archive/external-content/`に隔離
+
+- **スクリプト配置**
+  - 共通ユーティリティは`scripts/utilities/`
+  - プロジェクト固有は`projects/<name>/scripts/`
+
+- **禁止事項**
+  - ルート直下への`.md`/`.py`/`.js`等の直接追加（`README.md`除く）
+  - `node_modules/`や`.next/`/`out/`のコミット
+
+- **.gitignore（最低限）**
+  - `**/node_modules/`, `**/.next/`, `**/out/`, `*.tsbuildinfo`
+
+- **コミット前チェック**
+  - ルート直下に新規ファイルが無いこと
+  - 生成物がステージされていないこと
+
