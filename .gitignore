@@ -138,9 +138,10 @@ node_modules/
 # .taskmaster/tasks/ は管理するのでignoreしない
 # .taskmaster/config.json は管理するのでignoreしない
 
-# 一時ファイル
-organize_log_*.txt
-download_analysis_report.json
-downloaded_files.txt
-temp_config.json
-tatus --porcelain 
+# 一時ファイル（ルート）
+/organize_log_*.txt
+/download_analysis_report.json
+/downloaded_files.txt
+/temp_config.json
+# 誤生成ファイル（タイポ対策）
+/tatus --porcelain
