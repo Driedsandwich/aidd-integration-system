@@ -1,0 +1,38 @@
+# PIMS知識蓄積ファイル
+
+## 更新履歴
+- 2025-09-15: PIMSテンプレート初期化
+
+## 成功パターン
+
+### 2025-09-15 PIMSテンプレート作成成功パターン
+- **成功要因**: GitHub CLI + API を活用した自動化
+- **技術**: `gh repo create --template`, `gh api PATCH` でリポジトリ設定
+- **構成**: Issue/PRテンプレート + ラベル + Actions + ドキュメント
+- **学び**: テンプレートリポジトリは `is_template=true` で有効化が必要
+
+## 失敗パターン
+
+### 2025-09-15 PowerShellヒアストリング構文エラー
+- **問題**: `@'...'@` 構文でパースエラー
+- **原因**: 複数行文字列の構文ミス
+- **対策**: `Set-Content -Value` で単一行文字列を使用
+
+## 再発防止ルール
+
+### GitHub Actions依存関係
+- `js-yaml` パッケージが必要: `const yaml = require('js-yaml');`
+- ファイル存在チェック必須: `fs.existsSync(knowledgeFile)`
+- エラーハンドリング必須: try-catch文で適切な処理
+
+### テンプレートリポジトリ設定
+- `is_template=true` でテンプレート化
+- `topics` 配列で検索性向上
+- `description` で明確な説明
+
+### ファイル構成
+- `.github/ISSUE_TEMPLATE/`: Issueテンプレート
+- `.github/PULL_REQUEST_TEMPLATE.md`: PRテンプレート  
+- `.github/workflows/`: Actionsワークフロー
+- `.github/labels.yml`: ラベル定義
+- `.cursor/rules/knowledge.mdc`: 知識蓄積

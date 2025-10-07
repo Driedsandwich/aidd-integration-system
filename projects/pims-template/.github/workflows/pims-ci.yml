@@ -1,0 +1,100 @@
+name: PIMS CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  pims-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate PIMS Structure
+        run: |
+          echo "Validating PIMS structure..."
+          
+          # Check required files exist
+          if [ ! -f ".github/ISSUE_TEMPLATE/pdca-development.md" ]; then
+            echo "❌ Missing: .github/ISSUE_TEMPLATE/pdca-development.md"
+            exit 1
+          fi
+          
+          if [ ! -f ".github/ISSUE_TEMPLATE/emergency-fix.md" ]; then
+            echo "❌ Missing: .github/ISSUE_TEMPLATE/emergency-fix.md"
+            exit 1
+          fi
+          
+          if [ ! -f ".github/PULL_REQUEST_TEMPLATE.md" ]; then
+            echo "❌ Missing: .github/PULL_REQUEST_TEMPLATE.md"
+            exit 1
+          fi
+          
+          if [ ! -f "PDCA_ISSUE_USAGE_GUIDE.md" ]; then
+            echo "❌ Missing: PDCA_ISSUE_USAGE_GUIDE.md"
+            exit 1
+          fi
+          
+          echo "✅ PIMS structure validation passed"
+
+      - name: Check PIMS Labels
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            
+            const requiredLabels = [
+              'pdca-phase:plan',
+              'pdca-phase:do', 
+              'pdca-phase:check',
+              'pdca-phase:act',
+              'pims',
+              'pdca'
+            ];
+            
+            const existingLabels = labels.map(label => label.name);
+            const missingLabels = requiredLabels.filter(label => !existingLabels.includes(label));
+            
+            if (missingLabels.length > 0) {
+              console.log('⚠️ Missing PIMS labels:', missingLabels);
+              console.log('Run the PIMS Setup workflow to create missing labels');
+            } else {
+              console.log('✅ All required PIMS labels present');
+            }
+
+      - name: PIMS Knowledge Check
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Checking for PIMS knowledge accumulation..."
+          
+          # Check if PR description contains PIMS sections
+          if grep -q "PIMS気づき" "$GITHUB_EVENT_PATH" 2>/dev/null; then
+            echo "✅ PIMS knowledge section found in PR"
+          else
+            echo "ℹ️ Consider adding PIMS気づき section to PR description"
+          fi
+          
+          if grep -q "Evidence" "$GITHUB_EVENT_PATH" 2>/dev/null; then
+            echo "✅ Evidence section found in PR"
+          else
+            echo "ℹ️ Consider adding Evidence section to PR description"
+          fi
+
+
+
+
+
+
+
+
+
+
+

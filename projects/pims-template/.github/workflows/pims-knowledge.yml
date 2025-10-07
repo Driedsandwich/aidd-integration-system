@@ -1,0 +1,80 @@
+name: PIMS Knowledge Automation
+
+on:
+  issues:
+    types: [closed]
+  pull_request:
+    types: [closed]
+
+jobs:
+  knowledge-extraction:
+    if: github.event.issue != null || github.event.pull_request != null
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract PIMS Knowledge
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            let content, type, number;
+            
+            if (context.payload.issue) {
+              content = context.payload.issue.body;
+              type = 'issue';
+              number = context.payload.issue.number;
+            } else if (context.payload.pull_request) {
+              content = context.payload.pull_request.body;
+              type = 'pull_request';
+              number = context.payload.pull_request.number;
+            }
+            
+            if (!content) return;
+            
+            // Extract PIMS気づき section
+            const pimsMatch = content.match(/## 🧠 PIMS気づき[\s\S]*?(?=##|$)/);
+            if (pimsMatch) {
+              const pimsContent = pimsMatch[0];
+              
+              // Create knowledge entry
+              const timestamp = new Date().toISOString();
+              const knowledgeEntry = `## ${type.toUpperCase()}#${number} - ${timestamp}
+              
+${pimsContent}
+
+---
+`;
+              
+              // Append to knowledge file
+              const knowledgeFile = '.cursor/rules/knowledge.mdc';
+              if (fs.existsSync(knowledgeFile)) {
+                fs.appendFileSync(knowledgeFile, knowledgeEntry);
+                console.log(`✅ Added PIMS knowledge from ${type}#${number}`);
+              } else {
+                console.log(`ℹ️ Knowledge file not found: ${knowledgeFile}`);
+              }
+            } else {
+              console.log(`ℹ️ No PIMS気づき section found in ${type}#${number}`);
+            }
+
+      - name: Update Knowledge File
+        if: always()
+        run: |
+          echo "PIMS knowledge extraction completed"
+          echo "Check .cursor/rules/knowledge.mdc for accumulated insights"
+
+
+
+
+
+
+
+
+
+
+

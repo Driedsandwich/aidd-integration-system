@@ -1,0 +1,43 @@
+{
+  "name": "pims-template",
+  "version": "1.0.0",
+  "description": "PIMS (PDCA-Issue Muramasa System) Template Repository",
+  "main": "index.js",
+  "scripts": {
+    "setup": "echo 'PIMS Template Setup - Run gh workflow run pims-setup.yml to initialize labels'",
+    "validate": "echo 'PIMS Structure Validation - Run gh workflow run pims-ci.yml to validate'",
+    "docs": "echo 'PIMS Documentation - See PDCA_ISSUE_USAGE_GUIDE.md for detailed usage'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Driedsandwich/pims-template.git"
+  },
+  "keywords": [
+    "pdca",
+    "pims",
+    "github-issues",
+    "continuous-improvement",
+    "template",
+    "workflow",
+    "project-management"
+  ],
+  "author": "Driedsandwich",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Driedsandwich/pims-template/issues"
+  },
+  "homepage": "https://github.com/Driedsandwich/pims-template#readme",
+  "devDependencies": {},
+  "dependencies": {}
+}
+
+
+
+
+
+
+
+
+
+
+

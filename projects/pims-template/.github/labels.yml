@@ -1,0 +1,98 @@
+- name: "pdca-phase:plan"
+  color: "0052CC"
+  description: "PDCA Phase: Plan - 計画・分析・設計段階"
+
+- name: "pdca-phase:do"
+  color: "1D76DB"
+  description: "PDCA Phase: Do - 実装・実行段階"
+
+- name: "pdca-phase:check"
+  color: "0E8A16"
+  description: "PDCA Phase: Check - 検証・評価段階"
+
+- name: "pdca-phase:act"
+  color: "D93F0B"
+  description: "PDCA Phase: Act - 改善・標準化段階"
+
+- name: "pims-type:development"
+  color: "7057FF"
+  description: "PIMS Type: 開発・機能追加"
+
+- name: "pims-type:bugfix"
+  color: "D73A4A"
+  description: "PIMS Type: バグ修正"
+
+- name: "pims-type:refactor"
+  color: "7057FF"
+  description: "PIMS Type: リファクタリング"
+
+- name: "pims-type:documentation"
+  color: "0075CA"
+  description: "PIMS Type: ドキュメント"
+
+- name: "pims-type:infrastructure"
+  color: "FBCA04"
+  description: "PIMS Type: インフラ・設定"
+
+- name: "priority:high"
+  color: "D93F0B"
+  description: "Priority: 高優先度"
+
+- name: "priority:medium"
+  color: "FBCA04"
+  description: "Priority: 中優先度"
+
+- name: "priority:low"
+  color: "0E8A16"
+  description: "Priority: 低優先度"
+
+- name: "status:blocked"
+  color: "000000"
+  description: "Status: ブロック中"
+
+- name: "status:in-progress"
+  color: "1D76DB"
+  description: "Status: 進行中"
+
+- name: "status:review"
+  color: "FBCA04"
+  description: "Status: レビュー中"
+
+- name: "status:completed"
+  color: "0E8A16"
+  description: "Status: 完了"
+
+- name: "knowledge:accumulated"
+  color: "7057FF"
+  description: "Knowledge: 知識蓄積済み"
+
+- name: "evidence:recorded"
+  color: "1D76DB"
+  description: "Evidence: 証跡記録済み"
+
+- name: "template"
+  color: "BFDADC"
+  description: "Template: テンプレート関連"
+
+- name: "emergency"
+  color: "D93F0B"
+  description: "Emergency: 緊急対応"
+
+- name: "pims"
+  color: "7057FF"
+  description: "PIMS: PDCA-Issue Muramasa System"
+
+- name: "pdca"
+  color: "0052CC"
+  description: "PDCA: Plan-Do-Check-Act cycle"
+
+
+
+
+
+
+
+
+
+
+
