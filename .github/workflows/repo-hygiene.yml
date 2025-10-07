@@ -1,0 +1,24 @@
+name: Repo Hygiene
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  no-build-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Ensure no build artifacts or node_modules are tracked
+        run: |
+          set -e
+          disallowed=$(git ls-files | grep -E '\\.(next|out)(/|$)|(^|/)node_modules(/|$)') || true
+          if [ -n "$disallowed" ]; then
+            echo "Disallowed tracked files found:" 
+            echo "$disallowed"
+            exit 1
+          fi
+
