@@ -1,0 +1,517 @@
+---
+description: AI駆動開発におけるGit/GitHub運用ルール
+globs: **/*
+alwaysApply: true
+---
+
+# Git/GitHub運用ルール（AI駆動開発対応）
+
+## 概要
+
+このルールは、AI（Cursor/Windsurf等）と共同作業する際のGit運用方針を定義します。AIがファイルを自動編集する環境では、適切なバージョン管理が安全性と生産性の鍵となります。
+
+参考: [Git/GitHub初心者ガイド](mdc:docs/git-github-beginner-guide.md)
+
+---
+
+## 基本原則
+
+### ✅ 必須ルール
+
+1. **機密情報を絶対にコミットしない**
+   - APIキー、パスワード、トークンは`.env`に記載
+   - `.gitignore`で`.env`を必ず除外
+   - すでにコミットした場合は即座に無効化
+
+2. **小さく頻繁にコミット**
+   - AIの変更ごとにコミットを検討
+   - 1コミット = 1つの論理的な変更
+   - 「動く状態」でコミットする
+
+3. **わかりやすいコミットメッセージ**
+   - Conventional Commits形式を推奨
+   - AIが生成したコードは明記する
+   - タスクIDがあれば含める
+
+---
+
+## コミットメッセージ規則
+
+### Conventional Commits形式
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### Type（必須）
+
+- `feat:` - 新機能追加
+- `fix:` - バグ修正
+- `docs:` - ドキュメント変更のみ
+- `style:` - コード整形（機能変更なし）
+- `refactor:` - リファクタリング
+- `test:` - テスト追加・修正
+- `chore:` - ビルド設定、依存関係更新等
+
+#### Scope（任意）
+
+変更の範囲を示す:
+- `auth` - 認証関連
+- `api` - API関連
+- `ui` - UIコンポーネント
+- `docs` - ドキュメント
+- `config` - 設定ファイル
+
+#### 例
+
+```bash
+# ✅ 良い例
+feat(auth): Add JWT authentication with refresh tokens
+fix(api): Correct validation error in user endpoint
+docs(readme): Update installation instructions
+refactor(utils): Simplify date formatting logic
+
+# ✅ AI関連の例
+feat(chat): AI-generated chat interface (Cursor Agent)
+fix(auth): Correct AI-introduced typo in login handler
+refactor(api): Refactor AI-suggested code for better readability
+
+# ❌ 悪い例
+update stuff
+fix bug
+WIP
+asdf
+```
+
+#### TaskmasterタスクIDを含める
+
+```bash
+feat(auth): Implement OAuth login (Task #15)
+fix(api): Resolve endpoint timeout (Task #22.3)
+```
+
+---
+
+## ブランチ戦略
+
+### ブランチ命名規則
+
+```
+<type>/<short-description>
+```
+
+#### Type
+
+- `feature/` - 新機能
+- `fix/` - バグ修正
+- `refactor/` - リファクタリング
+- `docs/` - ドキュメント
+- `test/` - テスト追加
+- `task/` - Taskmasterタスク対応
+
+#### 例
+
+```bash
+feature/user-authentication
+fix/login-timeout
+refactor/api-cleanup
+docs/update-readme
+task-15-implement-oauth
+```
+
+### ブランチ運用フロー
+
+#### ソロ開発
+
+```
+main（常に動く状態を保つ）
+  ├─ feature/new-feature（実験的な変更）
+  └─ fix/bug-fix（緊急修正）
+```
+
+1. **新機能・実験**: `feature/` ブランチを作成
+2. **動作確認後**: プルリクエストを作成
+3. **レビュー**: AI生成コードを確認
+4. **マージ**: mainに統合
+5. **ブランチ削除**: 不要になったブランチは削除
+
+#### チーム開発
+
+```
+main（本番環境）
+  ├─ develop（開発環境）
+  │   ├─ feature/user-auth（開発者A）
+  │   └─ feature/payment（開発者B）
+  └─ hotfix/critical-bug（緊急修正）
+```
+
+### AI専用ブランチ
+
+AIに大規模な変更を依頼する時:
+
+```bash
+ai-experiment/refactor-database
+ai-generated/new-api-endpoints
+```
+
+- AIの変更を隔離
+- 動作確認後にマージ
+- 問題があれば簡単に破棄
+
+---
+
+## プルリクエスト（PR）運用
+
+### PR作成タイミング
+
+- **必須**: チーム開発時
+- **推奨**: ソロ開発でも、AIが大きな変更をした時
+- **理由**: 変更内容を整理・確認できる
+
+### PRテンプレート
+
+プロジェクトの`.github/PULL_REQUEST_TEMPLATE.md`を活用:
+
+```markdown
+## 変更の概要
+<!-- 何を変更したか簡潔に -->
+
+## AI関与度
+- [ ] 完全に手動
+- [ ] AIアシスト（一部修正あり）
+- [ ] AI生成（レビュー済み）
+
+## 関連タスク
+Task #XX または Issue #XX
+
+## チェックリスト
+- [ ] 動作確認済み
+- [ ] テスト追加/修正
+- [ ] ドキュメント更新
+- [ ] APIキー等の機密情報が含まれていない
+```
+
+---
+
+## .gitignore設定
+
+### 必須項目
+
+```gitignore
+# 環境変数・機密情報
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets/
+**/secret*
+
+# OS関連
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# エディター
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 依存関係
+node_modules/
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# ビルド成果物
+dist/
+build/
+*.log
+
+# Taskmaster（プロジェクト固有）
+.taskmaster/reports/
+.taskmaster/temp/
+```
+
+### .env.example
+
+機密情報の「構造」だけ共有:
+
+```env
+# APIキー
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+PERPLEXITY_API_KEY=
+
+# データベース
+DATABASE_URL=
+
+# その他
+PORT=
+NODE_ENV=
+```
+
+---
+
+## AI駆動開発での実践
+
+### 推奨ワークフロー
+
+#### 1. 作業開始
+
+```bash
+# ブランチ作成
+# GitHub Desktopまたは:
+git checkout -b feature/new-feature
+```
+
+#### 2. AIに作業依頼（Cursor等）
+
+```
+「ユーザー認証機能を実装してください」
+```
+
+#### 3. 変更確認
+
+- GitHub Desktopで差分を確認
+- 意図しない変更がないかチェック
+- 特に削除されたファイル/コードに注意
+
+#### 4. コミット
+
+```bash
+# GitHub Desktopで:
+# 1. 変更をステージング
+# 2. コミットメッセージ入力（Copilot自動生成も可）
+# 3. Commit to feature/new-feature
+```
+
+#### 5. プッシュ
+
+```bash
+# GitHub Desktopで「Push origin」
+```
+
+#### 6. プルリクエスト作成
+
+- GitHub Desktop: 「Create Pull Request」
+- ブラウザで開いてレビュー
+- 問題なければマージ
+
+#### 7. ローカルのmainを更新
+
+```bash
+# GitHub Desktopで:
+# 1. mainブランチに切り替え
+# 2. Pullをクリック
+```
+
+### Taskmasterとの統合
+
+#### サブタスク実装時
+
+```bash
+# 1. タスク確認
+task-master show 15.2
+
+# 2. ブランチ作成
+# task-15.2-implement-jwt
+
+# 3. 実装 + コミット
+# feat(auth): Implement JWT token generation (Task #15.2)
+
+# 4. 進捗記録
+task-master update-subtask --id=15.2 --prompt="JWTトークン生成を実装。コミット: abc123"
+
+# 5. 完了時
+task-master set-status --id=15.2 --status=done
+```
+
+---
+
+## よくあるミス・対策
+
+### ❌ NG: APIキーをコミット
+
+```javascript
+// ❌ 絶対にやらない
+const apiKey = "sk-ant-xxxxxxxxxxxxx";
+```
+
+```javascript
+// ✅ 環境変数を使う
+const apiKey = process.env.ANTHROPIC_API_KEY;
+```
+
+### ❌ NG: 巨大なコミット
+
+```bash
+# ❌ 悪い例（複数の変更が混在）
+git commit -m "update stuff"
+# - 認証機能追加
+# - バグ修正
+# - ドキュメント更新
+# - 設定変更
+```
+
+```bash
+# ✅ 良い例（小さく分割）
+git commit -m "feat(auth): Add JWT authentication"
+git commit -m "fix(api): Correct endpoint validation"
+git commit -m "docs(readme): Update API documentation"
+git commit -m "chore(config): Update environment variables"
+```
+
+### ❌ NG: 曖昧なコミットメッセージ
+
+```bash
+# ❌ 悪い例
+git commit -m "fix"
+git commit -m "update"
+git commit -m "WIP"
+git commit -m "asdf"
+```
+
+```bash
+# ✅ 良い例
+git commit -m "fix(auth): Resolve login timeout issue"
+git commit -m "feat(api): Add user profile endpoint"
+git commit -m "docs(guide): Add troubleshooting section"
+```
+
+### ❌ NG: mainブランチで直接作業
+
+```bash
+# ❌ 悪い例
+# mainブランチで実験的なコードを書く
+# → 壊れたらリカバリーが大変
+```
+
+```bash
+# ✅ 良い例
+# feature/experimentブランチで作業
+# → 失敗しても簡単に破棄できる
+```
+
+---
+
+## 緊急時の対処
+
+### 間違えてAPIキーをコミットした
+
+1. **即座にAPIキーを無効化**（各サービスのダッシュボード）
+2. **新しいAPIキーを発行**
+3. **コミットから削除**（まだプッシュしていない場合）:
+   ```bash
+   git reset HEAD~1  # 最後のコミットを取り消し
+   ```
+4. **すでにプッシュした場合**:
+   - リポジトリをプライベートにする
+   - Gitの履歴から完全に削除（高度な操作が必要）
+   - 最悪、リポジトリを削除して作り直す
+
+### AIが大量のファイルを削除した
+
+1. **GitHub Desktopで確認**
+2. **意図的でなければ「Discard Changes」**
+3. **すでにコミットした場合**:
+   ```bash
+   # Historyタブで該当コミットを右クリック
+   # → Revert Changes in Commit
+   ```
+
+### マージコンフリクトが発生
+
+1. **落ち着いて確認**（エディターで開く）
+2. **どちらを採用するか判断**
+   ```
+   <<<<<<< HEAD
+   自分の変更
+   =======
+   相手の変更
+   >>>>>>> branch-name
+   ```
+3. **適切に編集**（Cursorなら上部ボタンで選択可能）
+4. **「Continue Merge」をクリック**
+
+---
+
+## チェックリスト
+
+### コミット前
+
+- [ ] `.env`ファイルが含まれていない
+- [ ] APIキー等の機密情報がコード内にない
+- [ ] コミットメッセージは明確
+- [ ] 1コミット = 1つの論理的な変更
+- [ ] 動作確認済み
+
+### プッシュ前
+
+- [ ] 個人情報が含まれていない
+- [ ] 不要なログファイルが含まれていない
+- [ ] 大きなバイナリファイルがない（画像等）
+
+### プルリクエスト作成前
+
+- [ ] AIの変更を全て確認済み
+- [ ] テストが通る
+- [ ] ドキュメント更新済み
+- [ ] コンフリクトがない
+
+---
+
+## ツール設定
+
+### GitHub Desktop設定
+
+**推奨設定**:
+- コミット前に自動フォーマット: ON
+- プッシュ前に確認: ON
+- Copilot自動生成: ON（レビューは必ず行う）
+
+### Cursor/.vscode設定
+
+```json
+{
+  "git.enableSmartCommit": true,
+  "git.confirmSync": true,
+  "git.autofetch": true,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/node_modules/**": true
+  }
+}
+```
+
+---
+
+## まとめ
+
+### 必ず守ること
+
+1. ✅ **機密情報を絶対にコミットしない**
+2. ✅ **小さく頻繁にコミット**
+3. ✅ **明確なコミットメッセージ**
+4. ✅ **ブランチで安全に実験**
+5. ✅ **AIの変更は必ず確認**
+
+### AI時代のGit哲学
+
+> 「AIは強力な協力者だが、完璧ではない。  
+> Gitは、AIとの共同作業を安全にし、  
+> 失敗から学び、成功を積み重ねるための基盤である。」
+
+---
+
+**関連ドキュメント**
+- [Git/GitHub初心者ガイド](mdc:docs/git-github-beginner-guide.md)
+- [AI駆動開発実践ガイド](mdc:development-docs/AI駆動開発実践ガイド.md)
+- [Taskmaster開発ワークフロー](mdc:.cursor/rules/taskmaster/dev_workflow.mdc)

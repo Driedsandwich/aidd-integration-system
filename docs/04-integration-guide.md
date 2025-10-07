@@ -260,12 +260,268 @@ Issue完了 → 要件達成確認
 - **標準化**: テンプレートの最適化
 - **測定**: 効果指標の定量化
 
+## Git/GitHub運用との統合
+
+### バージョン管理の重要性
+
+AI駆動開発では、AIが自動的にファイルを編集・削除する可能性があるため、適切なバージョン管理が不可欠です。
+
+### 統合運用の3つの柱
+
+```
+Git/GitHub運用 ←→ ルール改善サイクル ←→ Issue管理
+      ↓                  ↓                    ↓
+  安全性確保        AI品質向上          構造化開発
+      ↓                  ↓                    ↓
+           効率的かつ安全なAI駆動開発
+```
+
+### Git運用フロー（GitHub Desktop使用）
+
+#### 作業開始時
+
+```bash
+# 1. Issue確認
+GitHub Issue #XX を確認
+
+# 2. ブランチ作成
+feature/issue-XX-description
+
+# 3. ルール確認
+.cursor/rules を確認
+```
+
+#### 実装中
+
+```bash
+# 1. AIに作業依頼（Cursor等）
+「Issue #XXの機能を実装してください」
+
+# 2. 変更確認（GitHub Desktop）
+- 差分を確認
+- 意図しない変更がないかチェック
+- 特に削除されたファイル/コードに注意
+
+# 3. コミット
+feat(module): Implement feature X (Issue #XX)
+```
+
+#### コミットメッセージ規則
+
+Conventional Commits形式を使用:
+
+```
+<type>(<scope>): <subject> (Issue #XX)
+
+例:
+feat(auth): Add JWT authentication (Issue #15)
+fix(api): Correct endpoint validation (Issue #22)
+docs(readme): Update installation guide (Issue #8)
+```
+
+#### プルリクエスト作成
+
+```markdown
+## 変更の概要
+Issue #XX の機能を実装
+
+## AI関与度
+- [ ] 完全に手動
+- [x] AIアシスト（一部修正あり）
+- [ ] AI生成（レビュー済み）
+
+## 関連Issue
+Issue #XX
+
+## チェックリスト
+- [x] 動作確認済み
+- [x] テスト追加/修正
+- [x] ドキュメント更新
+- [x] APIキー等の機密情報が含まれていない
+```
+
+### ルール改善サイクルとの連携
+
+#### ルール更新時の Git 運用
+
+```bash
+# 1. ルール改善を検討
+新しいパターンやベストプラクティスを発見
+
+# 2. ブランチ作成
+docs/update-rules-auth-pattern
+
+# 3. ルールファイル更新
+.cursor/rules/implementation.mdc を編集
+
+# 4. コミット
+docs(rules): Add JWT authentication pattern
+
+# 5. プルリクエスト
+レビュー後にメインブランチにマージ
+```
+
+### Issue管理との連携
+
+#### Issue起票からマージまでの統合フロー
+
+```markdown
+1. Issue作成
+   ├─ 要件定義
+   ├─ テスト観点
+   └─ 完了条件
+
+2. ブランチ作成
+   feature/issue-XX-description
+
+3. 実装（ルール適用）
+   ├─ .cursor/rules に従う
+   ├─ AIに依頼
+   └─ 変更確認
+
+4. コミット（頻繁に）
+   ├─ 小さく論理的に
+   ├─ わかりやすいメッセージ
+   └─ Issue番号を含める
+
+5. プルリクエスト
+   ├─ AI変更のレビュー
+   ├─ テスト確認
+   └─ ドキュメント更新確認
+
+6. マージ
+   ├─ Issue自動クローズ（「Closes #XX」記載）
+   └─ ブランチ削除
+
+7. ルール更新（必要に応じて）
+   └─ 新しいパターンを記録
+```
+
+### セキュリティ統合
+
+#### 機密情報管理のルール化
+
+```markdown
+# .cursor/rules/security.mdc
+
+## APIキー管理
+- ✅ `.env` ファイルに記載
+- ✅ `.gitignore` で除外
+- ❌ コード内にハードコーディングしない
+
+## コミット前チェック
+- [ ] `.env` が含まれていない
+- [ ] APIキーがコード内にない
+- [ ] 個人情報が含まれていない
+```
+
+### Taskmaster との三位一体運用
+
+```
+Taskmaster ←→ Git/GitHub ←→ Issue管理
+    ↓              ↓              ↓
+タスク管理    バージョン管理   要件管理
+    ↓              ↓              ↓
+        統合AI駆動開発プラットフォーム
+```
+
+#### 実践例
+
+```bash
+# 1. Taskmasterでタスク確認
+task-master show 15.2
+
+# 2. Gitブランチ作成
+task-15.2-implement-jwt
+
+# 3. 実装 + コミット
+feat(auth): Implement JWT (Task #15.2, Issue #15)
+
+# 4. Taskmaster進捗記録
+task-master update-subtask --id=15.2 \
+  --prompt="JWT実装完了。コミット: abc123"
+
+# 5. GitHub Issue更新
+Issue #15 にコメント: Task 15.2完了
+
+# 6. プルリクエスト作成
+Title: feat(auth): JWT authentication (Task #15, Issue #15)
+```
+
+### Git運用のベストプラクティス
+
+#### ✅ 推奨パターン
+
+1. **Issue → Branch → Commit → PR → Merge**
+   - 構造化された開発フロー
+
+2. **小さく頻繁なコミット**
+   - AIの変更ごとにコミット検討
+   - ロールバックしやすい
+
+3. **明確なコミットメッセージ**
+   - Conventional Commits
+   - Issue番号を含める
+
+4. **プルリクエストでレビュー**
+   - AIの変更を確認
+   - チーム全体で品質維持
+
+#### ❌ アンチパターン
+
+1. **メインブランチで直接作業**
+   - 壊れたらリカバリーが困難
+
+2. **巨大なコミット**
+   - レビューしづらい
+   - 問題の特定が困難
+
+3. **曖昧なメッセージ**
+   - 「fix」「update」だけは避ける
+
+4. **機密情報のコミット**
+   - APIキーの漏洩リスク
+
+### トラブルシューティング統合
+
+#### AIが大量削除した場合
+
+```bash
+# 1. 落ち着いて確認（GitHub Desktop）
+変更内容を確認
+
+# 2. 必要なら破棄
+右クリック → Discard Changes
+
+# 3. コミット済みなら
+History → 該当コミット → Revert
+
+# 4. Issue更新
+トラブルと対処を記録
+
+# 5. ルール更新
+同じ問題を防ぐルールを追加
+```
+
+### まとめ: 統合運用の価値
+
+```
+Git/GitHub + ルール改善 + Issue管理 = 最強のAI駆動開発基盤
+
+1. 安全性: Gitで変更を管理
+2. 品質: ルールでAIを誘導
+3. 効率: Issueで構造化
+```
+
+---
+
 ## 今後の展開
 
 ### 短期目標（1ヶ月）
 - 統合運用の完全習得
 - テンプレートの最適化
 - 効果測定の開始
+- **Git/GitHub運用の習慣化**
 
 ### 中期目標（3ヶ月）
 - 複数Issueでの実証

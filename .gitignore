@@ -46,8 +46,11 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Cursor
-.cursor/
+# Cursor（重要: .cursor/rules は管理対象）
+.cursor/mcp/
+.cursor/*.log
+.cursor/cache/
+# .cursor/rules/ は管理するのでignoreしない
 
 # Logs
 *.log
@@ -75,12 +78,22 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# Environments & 機密情報（重要！）
 .env
+.env.local
+.env.*.local
 .venv
 ENV/
 env/
 venv/
+
+# APIキー・機密情報（絶対にコミットしない）
+*.key
+*.pem
+**/secrets/
+**/*secret*
+**/*private*
+config/secrets.*
 
 # Spyder project settings
 .spyderproject
@@ -99,3 +112,35 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+# Dependency directories
+node_modules/
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Taskmaster
+.taskmaster/reports/
+.taskmaster/temp/
+.taskmaster/cache/
+# .taskmaster/tasks/ は管理するのでignoreしない
+# .taskmaster/config.json は管理するのでignoreしない
+
+# 一時ファイル
+organize_log_*.txt
+download_analysis_report.json
+downloaded_files.txt
+temp_config.json
+tatus --porcelain 
