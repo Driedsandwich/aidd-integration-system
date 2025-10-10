@@ -83,10 +83,7 @@ jobs:
           else
             N='${{ github.event.pull_request.number }}'
           fi
-          QUERY=$(cat <<Q
-          {"filter":{"property":"ghIssueNumber","number":{"equals":$N}}}
-Q
-          )
+          QUERY=$(printf '{"filter":{"property":"ghIssueNumber","number":{"equals":%s}}}' "$N")
           RES=$(curl -sS -X POST \
             -H "Authorization: Bearer ${NOTION_TOKEN}" \
             -H "Notion-Version: 2022-06-28" \
