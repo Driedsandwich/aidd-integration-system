@@ -42,19 +42,29 @@ jobs:
             NUMBER='${{ github.event.issue.number }}'
             STATE='${{ github.event.issue.state }}'
             URL='${{ github.event.issue.html_url }}'
+            ASSIGNEES_JSON='${{ toJson(github.event.issue.assignees.*.login) }}'
+            DUE='${{ github.event.issue.milestone.due_on }}'
           else
             TITLE='${{ github.event.pull_request.title }}'
             NUMBER='${{ github.event.pull_request.number }}'
             STATE='${{ github.event.pull_request.state }}'
             URL='${{ github.event.pull_request.html_url }}'
+            ASSIGNEES_JSON='${{ toJson(github.event.pull_request.assignees.*.login) }}'
+            DUE='${{ github.event.pull_request.milestone.due_on }}'
           fi
+          # normalize assignees -> comma-separated text
+          AS_TEXT=$(echo "${ASSIGNEES_JSON:-[]}" | jq -r 'if type=="array" then join(", ") else "" end')
+          # due date json (null or {start: ...})
+          if [ -n "$DUE" ]; then DUE_JSON=$(jq -n --arg d "$DUE" '{start:$d}'); else DUE_JSON=null; fi
           # properties only (for update)
           cat > props.json << EOF
           {
             "ghRepo": { "rich_text": [{ "text": { "content": "${REPO}" } }] },
             "ghIssueNumber": { "number": ${NUMBER} },
             "ghState": { "select": { "name": "${STATE}" } },
-            "ghUrl": { "url": "${URL}" }
+            "ghUrl": { "url": "${URL}" },
+            "ghAssignees": { "rich_text": [{ "text": { "content": "${AS_TEXT}" } }] },
+            "ghDue": { "date": ${DUE_JSON} }
           }
           EOF
           cat > payload.json << EOF
@@ -65,7 +75,9 @@ jobs:
               "ghRepo": { "rich_text": [{ "text": { "content": "${REPO}" } }] },
               "ghIssueNumber": { "number": ${NUMBER} },
               "ghState": { "select": { "name": "${STATE}" } },
-              "ghUrl": { "url": "${URL}" }
+              "ghUrl": { "url": "${URL}" },
+              "ghAssignees": { "rich_text": [{ "text": { "content": "${AS_TEXT}" } }] },
+              "ghDue": { "date": ${DUE_JSON} }
             }
           }
           EOF
