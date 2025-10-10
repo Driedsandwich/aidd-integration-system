@@ -148,6 +148,10 @@ node_modules/
 # 誤生成ファイル（タイポ対策）
 /tatus --porcelain
 
+# 誤ってルート直下にクローン/展開した埋め込みリポジトリを無視
+/aidd-integration-system/
+/hackathon-2025/
+
 # Node/Next.js ビルド成果物（任意階層）
 **/node_modules/
 **/.next/
