@@ -19,11 +19,11 @@ concurrency:
 
 jobs:
   sync:
-    if: ${{ secrets.NOTION_TOKEN != '' && secrets.NOTION_TASKS_DB != '' }}
+    if: ${{ secrets.NOTION_TOKEN != '' && (secrets.NOTION_TASKS_DB != '' || secrets.NOTION_DB_TASKS_ID != '') }}
     runs-on: ubuntu-latest
     env:
       NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-      NOTION_TASKS_DB: ${{ secrets.NOTION_TASKS_DB }}
+      NOTION_TASKS_DB: ${{ secrets.NOTION_TASKS_DB != '' && secrets.NOTION_TASKS_DB || secrets.NOTION_DB_TASKS_ID }}
     steps:
       - name: Ensure jq is available
         run: |
