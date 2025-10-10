@@ -24,12 +24,13 @@ jobs:
         id: q
         shell: bash
         run: |
-          BEFORE=$(date -u -d '90 days ago' +%Y-%m-%dT%H:%M:%SZ)
-          # lastEdited <= BEFORE OR tag == Temp
+          BEFORE=$(date -u -d '60 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          # lastEdited <= BEFORE OR tag in {Temp, Other}
           QUERY=$(jq -n --arg d "$BEFORE" '{
             "filter": {"or": [
               {"property":"lastEdited","date":{"on_or_before":$d}},
-              {"property":"tag","select":{"equals":"Temp"}}
+              {"property":"tag","select":{"equals":"Temp"}},
+              {"property":"tag","select":{"equals":"Other"}}
             ]},
             "page_size": 100
           }')
