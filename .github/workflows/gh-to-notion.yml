@@ -52,7 +52,6 @@ jobs:
           cat > props.json << EOF
           {
             "ghRepo": { "rich_text": [{ "text": { "content": "${REPO}" } }] },
-            "ghNumber": null,
             "ghIssueNumber": { "number": ${NUMBER} },
             "ghState": { "select": { "name": "${STATE}" } },
             "ghUrl": { "url": "${URL}" }
@@ -64,7 +63,7 @@ jobs:
             "properties": {
               "Name": { "title": [{ "text": { "content": "${TITLE}" } }] },
               "ghRepo": { "rich_text": [{ "text": { "content": "${REPO}" } }] },
-              "ghNumber": { "number": ${NUMBER} },
+              "ghIssueNumber": { "number": ${NUMBER} },
               "ghState": { "select": { "name": "${STATE}" } },
               "ghUrl": { "url": "${URL}" }
             }
