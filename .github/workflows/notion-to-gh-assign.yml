@@ -1,0 +1,74 @@
+name: Notion → GitHub (assignees/due sync)
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "GitHub issue number"
+        required: true
+      notion_page_id:
+        description: "Notion task page ID"
+        required: true
+      preview_only:
+        description: "Preview without changes (true/false)"
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+    steps:
+      - name: Fetch Notion task
+        id: fetch
+        shell: bash
+        run: |
+          set -euo pipefail
+          PID='${{ inputs.notion_page_id }}'
+          RES=$(curl -sS -X GET \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: 2022-06-28" \
+            https://api.notion.com/v1/pages/$PID)
+          TITLE=$(echo "$RES" | jq -r '.properties.Name.title[0].plain_text // ""')
+          ASSIGNEES=$(echo "$RES" | jq -r '.properties.ghAssignees.rich_text[0].plain_text // ""')
+          DUE=$(echo "$RES" | jq -r '.properties.ghDue.date.start // ""')
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "assignees=$ASSIGNEES" >> $GITHUB_OUTPUT
+          echo "due=$DUE" >> $GITHUB_OUTPUT
+
+      - name: Preview changes
+        if: ${{ inputs.preview_only == 'true' }}
+        run: |
+          echo "Would update issue #${{ inputs.issue_number }}"
+          echo "  title: ${{ steps.fetch.outputs.title }} (no change)"
+          echo "  assignees: ${{ steps.fetch.outputs.assignees }}"
+          echo "  due: ${{ steps.fetch.outputs.due }} (label due:YYYY-MM-DD)"
+
+      - name: Apply changes
+        if: ${{ inputs.preview_only != 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          NUM='${{ inputs.issue_number }}'
+          REPO='${{ github.repository }}'
+          # assignees
+          AS='${{ steps.fetch.outputs.assignees }}'
+          if [ -n "$AS" ]; then
+            CSV=$(echo "$AS" | sed 's/,\s\+/,/g')
+            gh issue edit "$NUM" -R "$REPO" --add-assignee "$CSV"
+          fi
+          # due as label
+          D='${{ steps.fetch.outputs.due }}'
+          if [ -n "$D" ]; then
+            LABEL="due:$D"
+            gh label create "$LABEL" -R "$REPO" -c '#0366d6' -f || true
+            gh issue edit "$NUM" -R "$REPO" --add-label "$LABEL"
+          fi
+
