@@ -140,6 +140,10 @@ jobs:
           HTTP=$(grep '^HTTP ' -R $GITHUB_WORKSPACE -n || true)
           CODE=$(echo "$HTTP" | sed -n 's/.*HTTP //p' | tail -n1)
           [ -z "$CODE" ] && CODE=0
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          ISSUE_URL="${{ github.event.issue.html_url || github.event.pull_request.html_url || '' }}"
+          REPO_NAME="${{ github.repository }}"
+          ISSUE_NUMBER="${{ github.event.issue.number || github.event.pull_request.number || 0 }}"
           cat > log.json <<EOF
           {"parent":{"database_id":"$LOG_DB"},
            "properties":{
@@ -148,7 +152,11 @@ jobs:
              "when":{"date":{"start":"$NOW"}},
              "result":{"select":{"name":"$RESULT"}},
              "httpCode":{"number":$CODE},
-             "ghEvent":{"rich_text":[{"text":{"content":"$EVENT"}}]}
+             "ghEvent":{"rich_text":[{"text":{"content":"$EVENT"}}]},
+             "runUrl":{"url":"$RUN_URL"},
+             "ghUrl":{"url":"$ISSUE_URL"},
+             "ghRepo":{"rich_text":[{"text":{"content":"$REPO_NAME"}}]},
+             "ghIssueNumber":{"number":$ISSUE_NUMBER}
            }
           }
           EOF
