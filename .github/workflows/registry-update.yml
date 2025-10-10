@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 1 * * 1'
   workflow_dispatch:
+    inputs:
+      depth:
+        description: "Scan depth (2-3)"
+        required: false
+        default: '2'
 
 permissions:
   contents: read
@@ -20,10 +25,13 @@ jobs:
         run: |
           if ! command -v jq >/dev/null 2>&1; then sudo apt-get update -y && sudo apt-get install -y jq; fi
 
-      - name: Scan Hub (depth 2) and upsert to Registry
+      - name: Scan Hub and upsert to Registry
         shell: bash
         run: |
           set -euo pipefail
+
+          DEPTH='${{ github.event.inputs.depth }}'
+          [ -z "$DEPTH" ] && DEPTH=2
 
           notion_children() {
             local id=$1
@@ -127,6 +135,34 @@ jobs:
               fi
             done < items2 || true
           done < items1
+
+          if [ "$DEPTH" -ge 3 ]; then
+            echo "Scanning depth-3 children..."
+            jq -r '.results[]? | @base64' d2.json > items2_all || true
+            while IFS= read -r line2a; do
+              item2a=$(echo "$line2a" | base64 -d)
+              bid2=$(echo "$item2a" | jq -r '.id')
+              parent2=$(echo "$item2a" | jq -r '.child_page.title // .child_database.title // ""')
+              notion_children "$bid2" > d3.json || true
+              jq -r '.results[]? | @base64' d3.json > items3 || true
+              while IFS= read -r line3; do
+                item3=$(echo "$line3" | base64 -d)
+                bid3=$(echo "$item3" | jq -r '.id')
+                t3=$(echo "$item3" | jq -r '.type')
+                if [ "$t3" = "child_page" ]; then
+                  name=$(echo "$item3" | jq -r '.child_page.title')
+                  meta=$(get_page_meta "$bid3")
+                  last=$(echo "$meta" | jq -r '.last_edited_time')
+                  upsert_registry "$name" "page" "$bid3" "$parent2" "$last"
+                elif [ "$t3" = "child_database" ]; then
+                  name=$(echo "$item3" | jq -r '.child_database.title')
+                  meta=$(get_db_meta "$bid3")
+                  last=$(echo "$meta" | jq -r '.last_edited_time')
+                  upsert_registry "$name" "database" "$bid3" "$parent2" "$last"
+                fi
+              done < items3 || true
+            done < items2_all || true
+          fi
 
           echo "Registry update finished."
 
