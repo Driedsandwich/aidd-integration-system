@@ -1,0 +1,55 @@
+name: Notion → GitHub (title/status sync)
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "GitHub issue number"
+        required: true
+      notion_page_id:
+        description: "Notion page (task) ID"
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+    steps:
+      - name: Fetch Notion task
+        id: fetch
+        shell: bash
+        run: |
+          PID='${{ inputs.notion_page_id }}'
+          RES=$(curl -sS -X GET \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: 2022-06-28" \
+            https://api.notion.com/v1/pages/$PID)
+          TITLE=$(echo "$RES" | jq -r '.properties.Name.title[0].plain_text // ""')
+          STATUS=$(echo "$RES" | jq -r '.properties."ステータス".select.name // ""')
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+
+      - name: Map status
+        id: map
+        run: |
+          case "${{ steps.fetch.outputs.status }}" in
+            Done) GH_STATE=closed ;;
+            *) GH_STATE=open ;;
+          esac
+          echo "gh_state=$GH_STATE" >> $GITHUB_OUTPUT
+
+      - name: Update GitHub Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          NUM='${{ inputs.issue_number }}'
+          TITLE='${{ steps.fetch.outputs.title }}'
+          STATE='${{ steps.map.outputs.gh_state }}'
+          gh issue edit $NUM --title "$TITLE" --state $STATE
+

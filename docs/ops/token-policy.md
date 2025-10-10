@@ -41,3 +41,9 @@
 ## 監査
 - CI/同期処理は、Notionコメント等に「誰が/何を/どこへ」を記録
 - 月次でランダム突合（目安50件）を実施し差異をレポート
+
+## 運用チェックリスト（Notion同期）
+- Integrationの招待先: 親ページ + 対象DB（編集可）
+- GitHub Secrets: `NOTION_TOKEN`, `NOTION_TASKS_DB`/`NOTION_DB_TASKS_ID`
+- ワークフロー手動起動（workflow_dispatch）を有効化し切り分け容易に
+- デバッグ: HTTPコード/本文をログ出力（エラー時の一次切り分け）
