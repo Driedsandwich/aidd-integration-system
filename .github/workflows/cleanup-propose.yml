@@ -1,0 +1,78 @@
+name: Propose Notion cleanup items
+
+on:
+  schedule:
+    - cron: '15 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      REGISTRY_DB: 28886723-2af9-81ff-8891-e62c1cdb9b26
+      QUEUE_DB: 28886723-2af9-81f7-9158-e3cc7e1d850f
+    steps:
+      - name: Ensure jq
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then sudo apt-get update -y && sudo apt-get install -y jq; fi
+
+      - name: Query candidates from Registry
+        id: q
+        shell: bash
+        run: |
+          BEFORE=$(date -u -d '90 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          # lastEdited <= BEFORE OR tag == Temp
+          QUERY=$(jq -n --arg d "$BEFORE" '{
+            "filter": {"or": [
+              {"property":"lastEdited","date":{"on_or_before":$d}},
+              {"property":"tag","select":{"equals":"Temp"}}
+            ]},
+            "page_size": 100
+          }')
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: 2022-06-28" \
+            -H "Content-Type: application/json" \
+            https://api.notion.com/v1/databases/${REGISTRY_DB}/query \
+            -d "$QUERY" > registry.json
+          echo "count=$(jq '.results | length' registry.json)" >> $GITHUB_OUTPUT
+
+      - name: Upsert into Cleanup Queue (status=proposed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -r '.results[] | @base64' registry.json > items
+          while IFS= read -r line; do
+            item=$(echo "$line" | base64 -d)
+            name=$(echo "$item" | jq -r '.properties.Name.title[0].plain_text // "(no title)"')
+            type=$(echo "$item" | jq -r '.properties.type.select.name // "unknown"')
+            url=$(echo "$item" | jq -r '.properties.url.url // ""')
+            last=$(echo "$item" | jq -r '.properties.lastEdited.date.start // ""')
+            [ -z "$url" ] && continue
+            # find existing queue by targetUrl
+            q=$(jq -n --arg u "$url" '{"filter":{"property":"targetUrl","url":{"equals":$u}},"page_size":1}')
+            res=$(curl -sS -X POST -H "Authorization: Bearer ${NOTION_TOKEN}" -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" https://api.notion.com/v1/databases/${QUEUE_DB}/query -d "$q")
+            pid=$(echo "$res" | jq -r '.results[0].id // ""')
+            # propose archive by default
+            jq -n --arg n "$name" --arg t "$type" --arg u "$url" --arg lu "$last" '{
+              "properties":{
+                "Name":{"title":[{"text":{"content":$n}}]},
+                "type":{"select":{"name":$t}},
+                "targetUrl":{"url":$u},
+                "lastUsed":{"date":{"start":$lu}},
+                "proposedAction":{"select":{"name":"archive"}},
+                "status":{"select":{"name":"proposed"}}
+              }
+            }' > props.json
+            if [ -n "$pid" ]; then
+              curl -sS -X PATCH -H "Authorization: Bearer ${NOTION_TOKEN}" -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" https://api.notion.com/v1/pages/$pid --data-binary @props.json >/dev/null || true
+            else
+              jq -n --arg db "$QUEUE_DB" --slurpfile p props.json '{"parent":{"database_id":$db},"properties":$p[0]}' > create.json
+              curl -sS -X POST -H "Authorization: Bearer ${NOTION_TOKEN}" -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" https://api.notion.com/v1/pages --data-binary @create.json >/dev/null || true
+            fi
+          done < items
+
