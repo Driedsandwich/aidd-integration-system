@@ -95,17 +95,20 @@ jobs:
       - name: Upsert Notion task (with debug)
         shell: bash
         run: |
+          echo "page_id='${{ steps.q.outputs.page_id }}'"
+          # Recreate payload files from step outputs to avoid inline quoting issues
+          echo '${{ steps.build.outputs.props }}' > props.json
+          echo '{"properties": '$(cat props.json)'}' > update.json
+          echo '${{ steps.build.outputs.payload }}' > payload.json
+
           if [ -n "${{ steps.q.outputs.page_id }}" ]; then
-            # update
+            # update (use file payload to avoid bash quoting pitfalls)
             RES=$(curl -sS -w "\n%{http_code}" -X PATCH \
               -H "Authorization: Bearer ${NOTION_TOKEN}" \
               -H "Notion-Version: 2022-06-28" \
               -H "Content-Type: application/json" \
               https://api.notion.com/v1/pages/${{ steps.q.outputs.page_id }} \
-              -d "{\"properties\": ${{ steps.build.outputs.props }}}")
-            CODE=$(echo "$RES" | tail -n1)
-            BODY=$(echo "$RES" | sed '$d')
-            echo "HTTP $CODE"; echo "$BODY" | jq '.' || echo "$BODY"
+              --data-binary @update.json)
           else
             # create
             RES=$(curl -sS -w "\n%{http_code}" -X POST \
@@ -113,11 +116,11 @@ jobs:
               -H "Notion-Version: 2022-06-28" \
               -H "Content-Type: application/json" \
               https://api.notion.com/v1/pages \
-              -d "${{ steps.build.outputs.payload }}")
-            CODE=$(echo "$RES" | tail -n1)
-            BODY=$(echo "$RES" | sed '$d')
-            echo "HTTP $CODE"; echo "$BODY" | jq '.' || echo "$BODY"
+              --data-binary @payload.json)
           fi
+          CODE=$(echo "$RES" | tail -n1)
+          BODY=$(echo "$RES" | sed '$d')
+          echo "HTTP $CODE"; echo "$BODY" | jq '.' || echo "$BODY"
 
       - name: Summary
         run: |
