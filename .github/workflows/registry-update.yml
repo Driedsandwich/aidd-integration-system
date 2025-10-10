@@ -1,0 +1,132 @@
+name: Build Notion registry (weekly)
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      HUB_PAGE: 26f86723-2af9-814c-91db-cc3498ccc33b
+      REGISTRY_DB: 28886723-2af9-81ff-8891-e62c1cdb9b26
+    steps:
+      - name: Ensure jq
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then sudo apt-get update -y && sudo apt-get install -y jq; fi
+
+      - name: Scan Hub (depth 2) and upsert to Registry
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          notion_children() {
+            local id=$1
+            curl -sS -X GET \
+              -H "Authorization: Bearer ${NOTION_TOKEN}" \
+              -H "Notion-Version: 2022-06-28" \
+              https://api.notion.com/v1/blocks/$id/children?page_size=100
+          }
+
+          get_page_meta() {
+            local id=$1
+            curl -sS -X GET \
+              -H "Authorization: Bearer ${NOTION_TOKEN}" \
+              -H "Notion-Version: 2022-06-28" \
+              https://api.notion.com/v1/pages/$id
+          }
+
+          get_db_meta() {
+            local id=$1
+            curl -sS -X GET \
+              -H "Authorization: Bearer ${NOTION_TOKEN}" \
+              -H "Notion-Version: 2022-06-28" \
+              https://api.notion.com/v1/databases/$id
+          }
+
+          upsert_registry() {
+            local name=$1; local type=$2; local id=$3; local parentName=$4; local lastEdited=$5
+            local url="https://www.notion.so/${id}"
+            # find existing by url
+            local q
+            q=$(jq -n --arg url "$url" '{"filter":{"property":"url","url":{"equals":$url}},"page_size":1}')
+            local res
+            res=$(curl -sS -X POST -H "Authorization: Bearer ${NOTION_TOKEN}" -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" https://api.notion.com/v1/databases/${REGISTRY_DB}/query -d "$q")
+            local pid
+            pid=$(echo "$res" | jq -r '.results[0].id // ""')
+            # props
+            jq -n \
+              --arg n "$name" --arg t "$type" --arg url "$url" --arg p "$parentName" --arg le "$lastEdited" \
+              '{
+                "properties":{
+                  "Name":{"title":[{"text":{"content":$n}}]},
+                  "type":{"select":{"name":$t}},
+                  "url":{"url":$url},
+                  "parent":{"rich_text":[{"text":{"content":$p}}]},
+                  "lastEdited":{"date":{"start":$le}}
+                }
+              }' > props.json
+            if [ -n "$pid" ]; then
+              curl -sS -X PATCH -H "Authorization: Bearer ${NOTION_TOKEN}" -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" https://api.notion.com/v1/pages/$pid --data-binary @props.json >/dev/null || true
+            else
+              jq -n --arg db "$REGISTRY_DB" --slurpfile p props.json '{"parent":{"database_id":$db},"properties":$p[0]}' > create.json
+              curl -sS -X POST -H "Authorization: Bearer ${NOTION_TOKEN}" -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" https://api.notion.com/v1/pages --data-binary @create.json >/dev/null || true
+            fi
+          }
+
+          # Depth 1
+          echo "Scanning root children..."
+          notion_children "$HUB_PAGE" > d1.json
+          jq -r '.results[] | @base64' d1.json > items1
+          while IFS= read -r line; do
+            item=$(echo "$line" | base64 -d)
+            bid=$(echo "$item" | jq -r '.id')
+            t=$(echo "$item" | jq -r '.type')
+            if [ "$t" = "child_page" ]; then
+              name=$(echo "$item" | jq -r '.child_page.title')
+              meta=$(get_page_meta "$bid")
+              last=$(echo "$meta" | jq -r '.last_edited_time')
+              upsert_registry "$name" "page" "$bid" "PIMS MCP Hub" "$last"
+            elif [ "$t" = "child_database" ]; then
+              name=$(echo "$item" | jq -r '.child_database.title')
+              meta=$(get_db_meta "$bid")
+              last=$(echo "$meta" | jq -r '.last_edited_time')
+              upsert_registry "$name" "database" "$bid" "PIMS MCP Hub" "$last"
+            fi
+          done < items1
+
+          # Depth 2 (scan children of each depth1 page/database)
+          echo "Scanning depth-2 children..."
+          while IFS= read -r line; do
+            item=$(echo "$line" | base64 -d)
+            bid=$(echo "$item" | jq -r '.id')
+            name1=$(echo "$item" | jq -r '.child_page.title // .child_database.title // ""')
+            t=$(echo "$item" | jq -r '.type')
+            # only attempt for blocks that can have children
+            notion_children "$bid" > d2.json || true
+            jq -r '.results[]? | @base64' d2.json > items2 || true
+            while IFS= read -r line2; do
+              item2=$(echo "$line2" | base64 -d)
+              bid2=$(echo "$item2" | jq -r '.id')
+              t2=$(echo "$item2" | jq -r '.type')
+              if [ "$t2" = "child_page" ]; then
+                name=$(echo "$item2" | jq -r '.child_page.title')
+                meta=$(get_page_meta "$bid2")
+                last=$(echo "$meta" | jq -r '.last_edited_time')
+                upsert_registry "$name" "page" "$bid2" "$name1" "$last"
+              elif [ "$t2" = "child_database" ]; then
+                name=$(echo "$item2" | jq -r '.child_database.title')
+                meta=$(get_db_meta "$bid2")
+                last=$(echo "$meta" | jq -r '.last_edited_time')
+                upsert_registry "$name" "database" "$bid2" "$name1" "$last"
+              fi
+            done < items2 || true
+          done < items1
+
+          echo "Registry update finished."
+
