@@ -1,0 +1,127 @@
+name: Build Notion sync metrics (daily)
+
+on:
+  schedule:
+    - cron: '5 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      LOG_DB: 28886723-2af9-8177-924b-ea981a2f6dfa
+      METRICS_DB: 28886723-2af9-81eb-99de-fbb6e1af2dc5
+    steps:
+      - name: Compute window
+        id: win
+        shell: bash
+        run: |
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          FROM=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          DAY=$(date -u +%Y-%m-%d)
+          echo "now=$NOW"   >> $GITHUB_OUTPUT
+          echo "from=$FROM" >> $GITHUB_OUTPUT
+          echo "day=$DAY"   >> $GITHUB_OUTPUT
+
+      - name: Query logs from Notion (last 24h)
+        id: q
+        shell: bash
+        run: |
+          FROM='${{ steps.win.outputs.from }}'
+          QUERY=$(printf '{"filter":{"and":[{"property":"when","date":{"on_or_after":"%s"}}]},"page_size":100,"sorts":[{"property":"when","direction":"descending"}]}' "$FROM")
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: 2022-06-28" \
+            -H "Content-Type: application/json" \
+            https://api.notion.com/v1/databases/${LOG_DB}/query \
+            -d "$QUERY" > logs.json
+          echo "count=$(jq '.results | length' logs.json)" >> $GITHUB_OUTPUT
+
+      - name: Calculate metrics with jq
+        id: calc
+        shell: bash
+        run: |
+          TOTAL=$(jq '.results | length' logs.json)
+          SUCCESS=$(jq '[.results[].properties.result.select.name] | map(select(.=="success")) | length' logs.json)
+          FAILURE=$((TOTAL - SUCCESS))
+          C2=$(jq '[.results[].properties.httpCode.number] | map(select(.>=200 and .<300)) | length' logs.json)
+          C4=$(jq '[.results[].properties.httpCode.number] | map(select(.>=400 and .<500)) | length' logs.json)
+          C5=$(jq '[.results[].properties.httpCode.number] | map(select(.>=500 and .<600)) | length' logs.json)
+          if [ "$TOTAL" -gt 0 ]; then
+            RATE=$(python3 - <<PY
+total=$TOTAL; success=$SUCCESS
+print(round(100*success/total,2))
+PY
+)
+          else
+            RATE=100
+          fi
+          echo "total=$TOTAL"       >> $GITHUB_OUTPUT
+          echo "success=$SUCCESS"    >> $GITHUB_OUTPUT
+          echo "failure=$FAILURE"    >> $GITHUB_OUTPUT
+          echo "code2xx=$C2"         >> $GITHUB_OUTPUT
+          echo "code4xx=$C4"         >> $GITHUB_OUTPUT
+          echo "code5xx=$C5"         >> $GITHUB_OUTPUT
+          echo "successRate=$RATE"   >> $GITHUB_OUTPUT
+
+      - name: Upsert daily metrics page
+        shell: bash
+        run: |
+          DAY='${{ steps.win.outputs.day }}'
+          # Find existing metrics page for DAY
+          Q=$(printf '{"filter":{"property":"date","date":{"equals":"%s"}},"page_size":1}' "$DAY")
+          RES=$(curl -sS -X POST \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: 2022-06-28" \
+            -H "Content-Type: application/json" \
+            https://api.notion.com/v1/databases/${METRICS_DB}/query \
+            -d "$Q")
+          PID=$(echo "$RES" | jq -r '.results[0].id // ""')
+          NOW='${{ steps.win.outputs.now }}'
+          NAME="Daily Metrics $DAY"
+          make_props() {
+            jq -n --arg name "$NAME" --arg day "$DAY" --arg now "$NOW" \
+              --argjson total ${'{'}{ steps.calc.outputs.total }{'}'} \
+              --argjson success ${'{'}{ steps.calc.outputs.success }{'}'} \
+              --argjson failure ${'{'}{ steps.calc.outputs.failure }{'}'} \
+              --argjson srate ${'{'}{ steps.calc.outputs.successRate }{'}'} \
+              --argjson c2 ${'{'}{ steps.calc.outputs.code2xx }{'}'} \
+              --argjson c4 ${'{'}{ steps.calc.outputs.code4xx }{'}'} \
+              --argjson c5 ${'{'}{ steps.calc.outputs.code5xx }{'}'} \
+              '{
+                "Name":{"title":[{"text":{"content":$name}}]},
+                "date":{"date":{"start":$day}},
+                "lastUpdated":{"date":{"start":$now}},
+                "total":{"number":$total},
+                "success":{"number":$success},
+                "failure":{"number":$failure},
+                "successRate":{"number":$srate},
+                "code2xx":{"number":$c2},
+                "code4xx":{"number":$c4},
+                "code5xx":{"number":$c5}
+              }'
+          }
+          if [ -n "$PID" ]; then
+            echo "Updating metrics page $PID"
+            make_props > props.json
+            curl -sS -X PATCH \
+              -H "Authorization: Bearer ${NOTION_TOKEN}" \
+              -H "Notion-Version: 2022-06-28" \
+              -H "Content-Type: application/json" \
+              https://api.notion.com/v1/pages/$PID \
+              --data-binary @<(jq -n --argfile p props.json '{"properties":$p}') >/dev/null
+          else
+            echo "Creating metrics page for $DAY"
+            make_props > props.json
+            curl -sS -X POST \
+              -H "Authorization: Bearer ${NOTION_TOKEN}" \
+              -H "Notion-Version: 2022-06-28" \
+              -H "Content-Type: application/json" \
+              https://api.notion.com/v1/pages \
+              --data-binary @<(jq -n --arg db "$METRICS_DB" --argfile p props.json '{"parent":{"database_id":$db},"properties":$p}') >/dev/null
+          fi
+
