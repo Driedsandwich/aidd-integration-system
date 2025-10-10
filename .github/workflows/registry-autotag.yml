@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '30 1 * * 1'
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Build Notion registry (weekly)"]
+    types: [completed]
 
 permissions:
   contents: read
