@@ -1,0 +1,86 @@
+name: Seed Notion dummy data (Logs/Metrics)
+
+on:
+  workflow_dispatch:
+    inputs:
+      logs:
+        description: "Seed Logs count"
+        required: false
+        default: '3'
+      metrics:
+        description: "Seed Metrics (create weekly + daily)"
+        required: false
+        default: 'true'
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      LOG_DB: 28886723-2af9-8177-924b-ea981a2f6dfa
+      METRICS_DB: 28886723-2af9-81eb-99de-fbb6e1af2dc5
+    steps:
+      - name: Ensure jq
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then sudo apt-get update -y && sudo apt-get install -y jq; fi
+
+      - name: Seed Logs
+        shell: bash
+        run: |
+          n='${{ inputs.logs }}'
+          for i in $(seq 1 "$n"); do
+            NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            CODE=$(( (RANDOM % 5 == 0) ? 429 : 200 ))
+            RES=$(jq -n --arg now "$NOW" --argjson code $CODE '{
+              "parent":{"database_id":env.LOG_DB},
+              "properties":{
+                "Name":{"title":[{"text":{"content":"Dummy Log"}}]},
+                "source":{"select":{"name":"GitHub Actions"}},
+                "when":{"date":{"start":$now}},
+                "result":{"select":{"name":( $code==200 ? "success" : "failure" )}},
+                "httpCode":{"number":$code},
+                "ghEvent":{"rich_text":[{"text":{"content":"seed"}}]}
+              }
+            }')
+            echo "$RES" | jq . > payload.json
+            curl -sS -X POST -H "Authorization: Bearer ${NOTION_TOKEN}" -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" https://api.notion.com/v1/pages --data-binary @payload.json >/dev/null
+          done
+
+      - name: Seed Metrics
+        if: ${{ inputs.metrics == 'true' }}
+        shell: bash
+        run: |
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          DAY=$(date -u +%Y-%m-%d)
+          WEEK=$(date -u +%G-W%V)
+          create_metric(){
+            local name=$1 total=$2 success=$3 c2=$4 c4=$5 c5=$6
+            rate=$(python3 - <<PY
+total=$total; success=$success
+print(round(100*success/total,2) if total>0 else 100)
+PY
+)
+            jq -n --arg name "$name" --arg now "$NOW" \
+              --argjson total $total --argjson success $success --argjson failure $((total-success)) \
+              --argjson srate $rate --argjson c2 $c2 --argjson c4 $c4 --argjson c5 $c5 '{
+              "parent":{"database_id":env.METRICS_DB},
+              "properties":{
+                "Name":{"title":[{"text":{"content":$name}}]},
+                "lastUpdated":{"date":{"start":$now}},
+                "total":{"number":$total},
+                "success":{"number":$success},
+                "failure":{"number":$total-$success},
+                "successRate":{"number":$srate},
+                "code2xx":{"number":$c2},
+                "code4xx":{"number":$c4},
+                "code5xx":{"number":$c5}
+              }
+            }' > m.json
+            curl -sS -X POST -H "Authorization: Bearer ${NOTION_TOKEN}" -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" https://api.notion.com/v1/pages --data-binary @m.json >/dev/null
+          }
+          create_metric "Daily Metrics $DAY" 12 12 12 0 0
+          create_metric "Weekly Report $WEEK" 50 49 49 1 0
+
