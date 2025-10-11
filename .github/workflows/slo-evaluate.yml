@@ -1,0 +1,136 @@
+name: Evaluate SLO (Notion logs)
+
+on:
+  schedule:
+    - cron: '20 3 * * *' # daily check (UTC)
+    - cron: '25 3 * * 1' # weekly check (UTC, Monday)
+  workflow_run:
+    workflows: ["GitHub → Notion (Issues/PR sync)"]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  slo:
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      LOG_DB: 28886723-2af9-8177-924b-ea981a2f6dfa
+    steps:
+      - name: Ensure jq + python
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then sudo apt-get update -y && sudo apt-get install -y jq; fi
+          python3 - <<'PY'
+print('ok')
+PY
+
+      - name: Evaluate daily SLO (last 24h)
+        id: daily
+        shell: bash
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          FROM=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          DAY=$(date -u +%Y-%m-%d)
+          QUERY=$(printf '{"filter":{"and":[{"property":"when","date":{"on_or_after":"%s"}}]},"page_size":200}' "$FROM")
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: 2022-06-28" \
+            -H "Content-Type: application/json" \
+            https://api.notion.com/v1/databases/${LOG_DB}/query \
+            -d "$QUERY" > logs.json || true
+          TOTAL=$(jq '.results | length' logs.json)
+          SUCCESS=$(jq '[.results[].properties.result.select.name] | map(select(.=="success")) | length' logs.json)
+          FAILURE=$((TOTAL - SUCCESS))
+          if [ "$TOTAL" -gt 0 ]; then
+            RATE=$(python3 - <<PY
+import sys
+T=int(sys.argv[1]); S=int(sys.argv[2])
+print(round(100*S/T,2))
+PY
+ "$TOTAL" "$SUCCESS")
+          else
+            RATE=100
+          fi
+          echo "total=$TOTAL"       >> $GITHUB_OUTPUT
+          echo "success=$SUCCESS"    >> $GITHUB_OUTPUT
+          echo "failure=$FAILURE"    >> $GITHUB_OUTPUT
+          echo "rate=$RATE"          >> $GITHUB_OUTPUT
+          # Threshold
+          THRESH=99
+          if [ "$TOTAL" -gt 0 ] && awk "BEGIN {exit !($RATE < $THRESH)}"; then
+            TITLE="SLO-breach daily $DAY"
+            BODY=$(jq -n --arg day "$DAY" --arg now "$NOW" --arg rate "$RATE" --arg total "$TOTAL" --arg success "$SUCCESS" --arg failure "$FAILURE" '{day:$day,now:$now,rate:$rate,total:$total,success:$success,failure:$failure}' )
+            # search existing open issue by title
+            Q="repo:${GH_REPO}+in:title+SLO-breach+daily+${DAY}+state:open"
+            RES=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/search/issues?q=${Q}")
+            NUM=$(echo "$RES" | jq -r '.items[0].number // ""')
+            if [ -n "$NUM" ]; then
+              curl -sS -X POST -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                -d "$(jq -n --arg b "Daily SLO breach update: $BODY" '{body:$b}')" \
+                "https://api.github.com/repos/${GH_REPO}/issues/${NUM}/comments" >/dev/null || true
+            else
+              curl -sS -X POST -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                -d "$(jq -n --arg t "$TITLE" --arg b "Daily SLO breach: $BODY" '{title:$t, body:$b}')" \
+                "https://api.github.com/repos/${GH_REPO}/issues" >/dev/null || true
+            fi
+          fi
+
+      - name: Evaluate weekly SLO (last 7 days)
+        id: weekly
+        shell: bash
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          FROM=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          WEEK=$(date -u +%G-W%V)
+          QUERY=$(printf '{"filter":{"and":[{"property":"when","date":{"on_or_after":"%s"}}]},"page_size":500}' "$FROM")
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: 2022-06-28" \
+            -H "Content-Type: application/json" \
+            https://api.notion.com/v1/databases/${LOG_DB}/query \
+            -d "$QUERY" > logs7.json || true
+          TOTAL=$(jq '.results | length' logs7.json)
+          SUCCESS=$(jq '[.results[].properties.result.select.name] | map(select(.=="success")) | length' logs7.json)
+          FAILURE=$((TOTAL - SUCCESS))
+          if [ "$TOTAL" -gt 0 ]; then
+            RATE=$(python3 - <<PY
+import sys
+T=int(sys.argv[1]); S=int(sys.argv[2])
+print(round(100*S/T,2))
+PY
+ "$TOTAL" "$SUCCESS")
+          else
+            RATE=100
+          fi
+          echo "w_total=$TOTAL"     >> $GITHUB_OUTPUT
+          echo "w_success=$SUCCESS"  >> $GITHUB_OUTPUT
+          echo "w_failure=$FAILURE"  >> $GITHUB_OUTPUT
+          echo "w_rate=$RATE"        >> $GITHUB_OUTPUT
+          # Threshold
+          THRESH=99
+          if [ "$TOTAL" -gt 0 ] && awk "BEGIN {exit !($RATE < $THRESH)}"; then
+            TITLE="SLO-breach weekly $WEEK"
+            BODY=$(jq -n --arg week "$WEEK" --arg now "$NOW" --arg rate "$RATE" --arg total "$TOTAL" --arg success "$SUCCESS" --arg failure "$FAILURE" '{week:$week,now:$now,rate:$rate,total:$total,success:$success,failure:$failure}' )
+            Q="repo:${GH_REPO}+in:title+SLO-breach+weekly+${WEEK}+state:open"
+            RES=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/search/issues?q=${Q}")
+            NUM=$(echo "$RES" | jq -r '.items[0].number // ""')
+            if [ -n "$NUM" ]; then
+              curl -sS -X POST -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                -d "$(jq -n --arg b "Weekly SLO breach update: $BODY" '{body:$b}')" \
+                "https://api.github.com/repos/${GH_REPO}/issues/${NUM}/comments" >/dev/null || true
+            else
+              curl -sS -X POST -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                -d "$(jq -n --arg t "$TITLE" --arg b "Weekly SLO breach: $BODY" '{title:$t, body:$b}')" \
+                "https://api.github.com/repos/${GH_REPO}/issues" >/dev/null || true
+            fi
+          fi
