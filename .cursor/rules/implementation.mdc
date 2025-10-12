@@ -134,6 +134,133 @@ class UserRepository {
 
 ---
 
+## 最小構成での開発実践（2025-10-12追加）
+
+### 開発開始時の原則
+
+#### ✅ DO: 最小限から始める
+```javascript
+// ✅ STEP 1: 最小限の実装
+function processData(data) {
+  return data.map(item => item.value);
+}
+
+// ✅ STEP 2: 動作確認後、必要なら拡張
+function processData(data) {
+  if (!Array.isArray(data)) {
+    throw new Error('Data must be an array');
+  }
+  return data.map(item => item.value);
+}
+```
+
+#### ❌ DON'T: 最初から完璧を目指す
+```javascript
+// ❌ 過剰な実装（まだ不要）
+class DataProcessor {
+  constructor(config) {
+    this.validator = new DataValidator(config);
+    this.transformer = new DataTransformer();
+    this.logger = new Logger();
+    this.cache = new Cache();
+  }
+  
+  async processData(data, options = {}) {
+    this.logger.info('Processing started');
+    const validated = await this.validator.validate(data);
+    const cached = this.cache.get(data);
+    if (cached) return cached;
+    // ... 100行以上の実装
+  }
+}
+```
+
+### 機能追加の判断フロー
+
+```
+新機能のアイデア
+    ↓
+① 既存の方法で実現可能か？
+    Yes → 新機能は不要
+    No  ↓
+② 今すぐ必要か？
+    No → 後回し（メモだけ残す）
+    Yes ↓
+③ 最小限の実装は何か？
+    ↓
+④ 最小限で実装
+    ↓
+⑤ 動作確認
+    ↓
+⑥ 本当に拡張が必要になったら拡張
+```
+
+### 実装レベルの選択
+
+#### Level 1: ハードコード（最初）
+```python
+# ✅ まずこれで十分
+API_KEY = "abc123"
+BASE_URL = "https://api.example.com"
+```
+
+#### Level 2: 設定ファイル（必要になったら）
+```python
+# 複数環境で使う必要が出てから
+import os
+API_KEY = os.getenv('API_KEY')
+BASE_URL = os.getenv('BASE_URL')
+```
+
+#### Level 3: 設定管理システム（本当に必要な場合のみ）
+```python
+# 複雑な設定管理が必要になってから
+from config import ConfigManager
+config = ConfigManager.load('production')
+API_KEY = config.get('api.key')
+```
+
+### 管理ツールの判断基準
+
+#### ❌ 作らないもの
+- 使用頻度が週1回未満の管理画面
+- 手動で十分な自動化システム
+- 1プロジェクトだけの共通ライブラリ
+- 「将来使うかも」のユーティリティ
+
+#### ✅ 作るもの
+- 毎日使う頻繁な操作の自動化
+- 人為ミスを防ぐ重要な検証
+- 明確なROIがある効率化
+- 今すぐ痛みを感じている課題の解決
+
+### リファクタリングのタイミング
+
+#### 🚫 今すぐリファクタリングしない
+- コードが「美しくない」
+- 「もっと良い方法がある気がする」
+- 「将来困るかも」
+
+#### ✅ 今すぐリファクタリングする
+- 同じコードを3回以上コピペした
+- バグの温床になっている
+- 新機能追加の妨げになっている
+- 理解するのに30分以上かかる
+
+### チェックリスト
+
+**実装前**:
+- [ ] 最小限の実装を定義したか？
+- [ ] それ以外の機能は本当に今必要か？
+- [ ] 「将来のため」で追加していないか？
+
+**実装後**:
+- [ ] 動作確認したか？
+- [ ] 本当に必要な機能だけか？
+- [ ] 不要なコードを削除したか？
+
+---
+
 ## PRD（Product Requirements Document）駆動開発
 
 ### 大きな機能の実装時

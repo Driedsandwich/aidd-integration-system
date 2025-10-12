@@ -17,7 +17,20 @@
 
 **実装**: `.cursor/rules/`配下のルールが自動的に改善されます
 
-### 2. Issue管理でPDCA ✅
+### 2. 最小構成原則 ✅
+
+```
+最小限で開始 → 動作確認 → 必要性評価 → 段階的拡張
+```
+
+**実装**: `general.mdc`と`implementation.mdc`で実践ガイド提供
+
+**重要**: 
+- 「将来のため」は実装しない
+- 「管理のための管理」を避ける
+- 既存の方法で不可能な場合のみ追加
+
+### 3. Issue管理でPDCA ✅
 
 ```
 Plan（Issue作成）→ Do（実装）→ Check（検証）→ Act（改善）
@@ -25,7 +38,7 @@ Plan（Issue作成）→ Do（実装）→ Check（検証）→ Act（改善）
 
 **実装**: GitHub Issueで作業を可視化・管理します
 
-### 3. Docs活用 ⚠️
+### 4. Docs活用 ⚠️
 
 ```
 @docsに最新ドキュメントを登録
@@ -34,14 +47,15 @@ Plan（Issue作成）→ Do（実装）→ Check（検証）→ Act（改善）
 
 **実装**: これから拡張予定
 
-### 4. MCP（必要に応じて） ⚠️
+### 5. MCP（必要に応じて） ✅
 
 ```
-Notion MCPでデータ保存・参照
-必要に応じて機能拡張
+コアサーバーのみ（4-6個）
+段階的拡張方針
+シンプルで安定した構成
 ```
 
-**実装**: Notion MCP設定予定
+**実装**: `mcp-configuration.mdc`で最小構成原則を確立
 
 ---
 
@@ -50,14 +64,15 @@ Notion MCPでデータ保存・参照
 ### ルール（.cursor/rules/）
 
 ```
-.cursor/rules/（8ファイル、505行）
-├─ cursor_rules.mdc          (46行) - ルール作成のルール
-├─ general.mdc               (30行) - 基本方針、RuleOps
-├─ self_improve.mdc          (63行) - 自己改善サイクル
-├─ environment.mdc           (12行) - 開発環境
-├─ implementation.mdc       (135行) - 実装方針、PRD駆動、MVP原則
-├─ knowledge.mdc             (67行) - 失敗例と再発防止
-├─ git.mdc                  (130行) - Git/GitHub運用
+.cursor/rules/（9ファイル、770行）
+├─ cursor_rules.mdc           (46行) - ルール作成のルール
+├─ general.mdc                (69行) - 基本方針、RuleOps、最小構成原則
+├─ self_improve.mdc           (63行) - 自己改善サイクル
+├─ environment.mdc            (12行) - 開発環境
+├─ implementation.mdc        (241行) - 実装方針、PRD駆動、MVP原則、最小構成実践
+├─ knowledge.mdc             (114行) - 失敗例と再発防止、最小構成原則の確立
+├─ git.mdc                   (161行) - Git/GitHub運用
+├─ mcp-configuration.mdc      (42行) - MCP最小構成原則
 └─ workspace-organization.mdc (22行) - ワークスペース整理
 
 .cursor/rules/.disabled/（無効化・参照用）
