@@ -1,0 +1,49 @@
+---
+description: MCP server configuration guidelines for minimal setup and incremental expansion
+globs: .cursor/mcp.json, **/mcp.json
+alwaysApply: true
+---
+
+- **Minimal Configuration Principle**
+  - Start with core, proven MCP servers only
+  - Avoid complex integrations until basic functionality is verified
+  - Prioritize stability over feature completeness
+
+- **Core MCP Servers (Recommended Starting Set)**
+  - `github` - Essential for repository operations
+  - `fetch` - Basic web content retrieval
+  - `time` - Date/time utilities
+  - `filesystem` - File operations
+  - `notion` - Documentation and notes (if needed)
+
+- **Configuration Strategy**
+  - ✅ **DO**: Configure 4-6 core servers first
+  - ✅ **DO**: Test each server individually before adding more
+  - ✅ **DO**: Use minimal, working configurations
+  - ❌ **DON'T**: Add complex integrations (Zapier, custom APIs) without verification
+  - ❌ **DON'T**: Configure all servers simultaneously
+
+- **Incremental Expansion Process**
+  1. **Phase 1**: Deploy core servers, verify all green status
+  2. **Phase 2**: Add specialized servers one at a time
+  3. **Phase 3**: Configure complex integrations with proper authentication
+  4. **Phase 4**: Custom server development (if needed)
+
+- **Troubleshooting Approach**
+  - Isolate problematic servers by temporary removal
+  - Verify core functionality before debugging specific issues
+  - Document working configurations before modifications
+  - Use web search for package verification before npm install
+
+- **AI Decision Making for MCP Servers**
+  - When AI determines additional MCP servers are needed:
+    - Document the requirement and reasoning
+    - Schedule for later individual investigation
+    - Do not attempt immediate configuration during active development
+    - Prioritize current task completion over tool expansion
+
+- **Error Recovery**
+  - Remove problematic servers to restore functionality
+  - Keep working servers operational
+  - Address issues individually, not as bulk operations
+  - Maintain backup of working configurations
