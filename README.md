@@ -1,178 +1,264 @@
-# PIMS - Product Integration Management System
+# AI駆動開発（AIDD）ワークスペース
 
-**PIMS**（Product Integration Management System）は、AI駆動開発（AIDD）における知見蓄積とタスク管理を統合したシステムです。Notion中心のタスク管理とGitHub連携により、開発の全プロセスを可視化・自動化します。
+**AI駆動開発を10倍快適にする**実践ワークスペースです。YouTubeの動画思想に基づき、シンプルで強力な開発環境を提供します。
 
----
-
-## 🎯 主要機能
-
-### 1. GitHub ⇄ Notion 統合
-- **片方向同期（自動）**: GitHub Issues/PR → Notion Tasks DB
-- **双方向同期（限定）**: Notion Tasks ⇄ GitHub（assignees/due、preview運用中）
-- **監査ログ**: 全同期イベントをNotion Sync Logs DBに記録
-- **SLO自動評価**: 日次/週次でsuccessRate算出、99%未達時に自動Issue起票
-
-### 2. 自動化ワークフロー（12種類）
-- **同期**: `gh-to-notion.yml`（GitHub→Notion）、`notion-to-gh-assign.yml`（Notion→GitHub、preview）
-- **監査**: `slo-evaluate.yml`（SLO評価＋未達時アラート）
-- **メトリクス**: `weekly-report.yml`（週次集計）、`sync-metrics.yml`（日次集計）
-- **運用**: `registry-update.yml`（Notionページ棚卸し）、`cleanup-propose.yml`（削除候補提案）
-- **整備**: `backfill-assignees-due.yml`（欠損データ補完）、`seed-dummy-data.yml`（テストデータ）
-
-### 3. Notion構成
-- **PIMS MCP Hub**（中央管理ページ）
-  - PIMS Tasks（GitHub Issue/PR同期先）
-  - PIMS Sync Logs（同期実行履歴・障害追跡）
-  - PIMS Sync Metrics（週次/日次集計・SLO可視化）
-  - PIMS Projects（プロジェクト管理）
-  - PIMS Knowledge（知見蓄積）
-  - PIMS Registry（週次構築、Hub配下のページ/DB一覧）
-  - PIMS Cleanup Queue（削除候補の提案→承認→実施）
+> 「最強のルールを探す」のではなく、「使えば使うほど改善する仕組み」を作る
 
 ---
 
-## 📁 リポジトリ構成
+## 🎯 中核思想（動画ベース）
 
-### コアシステム
-- `.github/workflows/` - GitHub Actions（12 workflows）
-- `docs/ops/` - 運用ドキュメント（9ファイル）
-- `.cursor/` - Cursor/MCP設定
+### 1. ルール改善サイクル（RuleOps） ✅
 
-### アーカイブ/サブプロジェクト
-- `aidd-integration-system/` - 統合システム本体（埋め込みリポジトリ、.gitignoreで除外）
-- `hackathon-2025/` - Steppyハッカソンアプリ（埋め込みリポジトリ、.gitignoreで除外）
-- `development-docs/` - AI駆動開発実践ガイド・PDCA設計
-- `docs/` - 要件・引継ぎ・アーカイブ
-- `src/` - Pythonスクリプト（マルチデバイス同期、知見蓄積等）
+```
+指示理解 → 実行 → エラー → フィードバック 
+→ 解決策整理 → ルール反映 → 次の指示
+```
 
----
+**実装**: `.cursor/rules/`配下のルールが自動的に改善されます
 
-## 🚀 クイックスタート
+### 2. Issue管理でPDCA ✅
 
-### 前提条件
-- GitHubアカウント（`Driedsandwich`）
-- Notionワークスペース＋Integration Token
-- Cursor/MCP設定済み（`.cursor/mcp.json`）
+```
+Plan（Issue作成）→ Do（実装）→ Check（検証）→ Act（改善）
+```
 
-### 初期セットアップ
+**実装**: GitHub Issueで作業を可視化・管理します
 
-#### 1. GitHub Secrets設定
-Repository Settings → Secrets and variables → Actions → New repository secret
+### 3. Docs活用 ⚠️
 
-| Secret名 | 値 | 説明 |
-|---------|-----|------|
-| `NOTION_TOKEN` | `ntn_xxxxx...` | Notion Integration Token |
-| `NOTION_TASKS_DB` | `28886723-2af9-81cd-...` | PIMS Tasks DB ID |
+```
+@docsに最新ドキュメントを登録
+ライブラリの仕様を正確に参照
+```
 
-#### 2. Notion Integration共有
-1. https://www.notion.so/my-integrations で該当Integrationを選択
-2. 以下のDB/ページに「Connections」で追加:
-   - PIMS MCP Hub
-   - PIMS Tasks
-   - PIMS Sync Logs
-   - PIMS Sync Metrics
-   - （他、必要に応じてProjects/Knowledge/Registry/Cleanup Queue）
+**実装**: これから拡張予定
 
-#### 3. ダッシュボード作成（オプション）
-`docs/ops/notion-dashboard-setup.md`の手順に従い、Notion UIでビューを作成:
-- Tasks: Status Board（カンバン）、Open Tasks（テーブル）
-- Logs: Last 7 Days（テーブル）、Failures Only（テーブル）
-- Metrics: Weekly Trend（テーブル）
+### 4. MCP（必要に応じて） ⚠️
+
+```
+Notion MCPでデータ保存・参照
+必要に応じて機能拡張
+```
+
+**実装**: Notion MCP設定予定
 
 ---
 
-## 📚 ドキュメント
+## 📁 ディレクトリ構成
 
-### 運用ガイド
-- [Runbook](docs/ops/runbook.md) - 日常運用・障害対応・手動復旧
-- [Notion同期](docs/ops/notion-sync.md) - 片方向同期の運用ポイント
-- [ダッシュボード作成](docs/ops/notion-dashboard-setup.md) - NotionビューのUI作成手順
+### ルール（.cursor/rules/）
 
-### 監査・セキュリティ
-- [Token Policy](docs/ops/token-policy.md) - 最小権限・ローテーション方針
-- [Secrets監査](docs/ops/secrets-audit.md) - Secrets棚卸し・監査チェックリスト
+```
+.cursor/rules/（8ファイル、505行）
+├─ cursor_rules.mdc          (46行) - ルール作成のルール
+├─ general.mdc               (30行) - 基本方針、RuleOps
+├─ self_improve.mdc          (63行) - 自己改善サイクル
+├─ environment.mdc           (12行) - 開発環境
+├─ implementation.mdc       (135行) - 実装方針、PRD駆動、MVP原則
+├─ knowledge.mdc             (67行) - 失敗例と再発防止
+├─ git.mdc                  (130行) - Git/GitHub運用
+└─ workspace-organization.mdc (22行) - ワークスペース整理
 
-### 拡張計画
-- [双方向ロールアウト](docs/ops/notion-to-github-rollout.md) - Notion→GitHubのPhase 1-3計画
-- [Governance](docs/ops/governance.md) - Notion最上層の命名/配置/クリーンアップ
+.cursor/rules/.disabled/（無効化・参照用）
+├─ taskmaster/              - Taskmaster rules（複雑性の観点から見送り）
+└─ git-workflow.mdc.old     - 旧Git運用ルール
+```
 
-### トラブルシューティング
-- [Postmortem 2025-10-10](docs/ops/postmortem-2025-10-10-notion-sync.md) - 過去の障害事例
-- [Sync Logs Dashboards](docs/ops/sync-logs-dashboards.md) - Logsビュー作成詳細
+### ドキュメント（docs/）
+
+```
+docs/
+├─ SIMPLIFICATION_SUMMARY.md        - 簡素化プロジェクト完了サマリー
+├─ simplification-final-report.md   - 詳細報告書
+├─ video-philosophy-alignment-check.md - 動画思想との整合性確認
+├─ over-engineering-audit-report.md - オーバーエンジニアリング監査
+├─ youtube-video-analysis-integrated-report.md - YouTube動画分析
+├─ notion-mcp-simple-guide.md       - Notion MCPシンプル活用ガイド
+├─ git-github-beginner-guide.md     - Git/GitHub初心者ガイド
+├─ PDCA_ISSUE_USAGE_GUIDE.md        - PDCA×Issue運用ガイド
+├─ templates/                       - YouTube動画統合テンプレート
+└─ .disabled/ops/                   - 旧Notion PIMS運用体制（参照用）
+```
+
+### プロジェクト（projects/）
+
+```
+projects/
+├─ hackathon-2025/          - Steppyハッカソンアプリ（凍結中）
+│   └─ docs/learnings.md    - ハッカソン固有の知見
+├─ aidd-integration-system/ - 統合システム（アーカイブ）
+└─ pims-template/           - PIMSテンプレート
+```
+
+---
+
+## 🚀 使い方（非エンジニア向け）
+
+### 基本的なワークフロー
+
+```
+1. Cursorに自然言語で指示
+   「ユーザー認証機能を追加してください」
+   ↓
+2. Cursorがコードを生成
+   ↓
+3. GitHub Desktopで差分を確認
+   ↓
+4. コミット（Conventional Commits形式）
+   ↓
+5. 大きな作業はGitHub Issueで管理
+   ↓
+6. 問題があればルールに自動記録（RuleOps）
+```
+
+### GitHub Issue管理
+
+**小さな作業**: チャット内で完結  
+**大きな作業**: Issueで管理
+
+```bash
+# Issue作成
+gh issue create --title "新機能の実装" --body "詳細..."
+
+# 進捗報告
+gh issue comment 15 --body "実装完了"
+
+# 完了時
+gh issue close 15
+```
+
+詳細: `PDCA_ISSUE_USAGE_GUIDE.md`
+
+---
+
+## 🔧 環境セットアップ
+
+### 必須ツール
+
+- **Cursor**: AI駆動コードエディタ
+- **GitHub Desktop**: Git GUI（コマンド不要）
+- **gh CLI**: GitHub操作（任意、自然言語で指示可能）
+
+### 推奨ツール
+
+- **Notion**: データ保存・可視化（MCP経由）
+- **Claude Code**: 補助的なAIツール
+
+### 環境変数（.env）
+
+```env
+# AI Provider API Keys
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+PERPLEXITY_API_KEY=
+
+# Notion（MCP使用時）
+NOTION_API_KEY=
+```
+
+詳細: `docs/environment-setup-guide.md`
+
+---
+
+## 📊 プロジェクト状態
+
+### 完了したプロジェクト
+
+- ✅ **ルール改善サイクル構築**（Issue #6）
+- ✅ **Issue管理・PDCAサイクル実装**（Issue #7）
+- ✅ **統合運用システム実装**（Issue #8）
+- ✅ **GitHubリポジトリ統合**（Issue #9）
+- ✅ **AI駆動開発実践ガイド統合**（Issue #10）
+- ✅ **Issue管理システム構築**（Issue #11）
+- ✅ **オーバーエンジニアリング監査と簡素化**（Issue #47）
+
+### 進行中のプロジェクト
+
+- 🔄 **ClaudeCodeリファクタリング**（Issue #12）
+- 🔄 **ハッカソン最終調整**（Issue #13）
+- 🔄 **Vercelデプロイ修復**（Issue #14）
+
+---
+
+## 📈 簡素化プロジェクトの成果
+
+**実施日**: 2025年10月12日  
+**Issue**: #47（クローズ済み）
+
+### 削減実績
+
+| 指標 | Before | After | 削減率 |
+|------|--------|-------|--------|
+| ルールファイル数 | 10個 | **8個** | **-20%** |
+| 総行数 | ~800行 | **505行** | **-37%** |
+| knowledge.mdc | 200行 | **67行** | **-67%** |
+| Git運用 | 396行 | **130行** | **-67%** |
+
+### 撤収した過剰実装
+
+- ❌ problem_detection_system（メタ管理システム）
+- ❌ SubChat並行開発システム
+- ❌ 統括役システム
+- ❌ Notion PIMS運用体制（ポストモーテム/SLO）
+
+### 保持した中核機能
+
+- ✅ ルール改善サイクル（RuleOps）
+- ✅ Issue管理PDCA
+- ✅ 基本的な失敗例と再発防止
+- ✅ シンプルなGit運用
+
+詳細: `docs/SIMPLIFICATION_SUMMARY.md`
+
+---
+
+## 🎓 参考資料
+
+### YouTube動画（元ネタ）
+
+**【実践】AI駆動開発を10倍快適にする【AIDD】**  
+公開日: 2024年6月27日  
+URL: https://www.youtube.com/watch?v=Uk1qB_-RAps
+
+### 分析報告書
+
+- `docs/youtube-video-analysis-integrated-report.md` - 動画内容の体系的整理
+- `docs/video-philosophy-alignment-check.md` - 動画思想との整合性確認
 
 ### AI駆動開発ガイド
-- [AI駆動開発実践ガイド](development-docs/AI駆動開発実践ガイド.md)
-- [Issue管理実践ガイド](development-docs/Issue管理実践ガイド.md)
-- [ルール改善サイクル実践ガイド](development-docs/ルール改善サイクル実践ガイド.md)
-- [Git/GitHub初心者ガイド](docs/git-github-beginner-guide.md) - 非エンジニア向けGit入門（コマンド不要）
-- [環境変数設定ガイド](docs/environment-setup-guide.md) - APIキー・機密情報の安全な管理
 
-### YouTube動画統合テンプレート
-- **[GitHub: youtube-video-integration-templates](https://github.com/Driedsandwich/youtube-video-integration-templates)** 🔗
-- **[すぐ使えるプロンプト](docs/templates/SIMPLE_PROMPT.md)** ⚡ - 基本版（コピペで即実行）
-- [テンプレート詳細](docs/templates/) - 4段階のテンプレート（30秒版/1分版/5分版/JSON版）
-- _Author: Driedsandwich / Created with Cursor (Claude Sonnet 4.5)_
+- `PDCA_ISSUE_USAGE_GUIDE.md` - Issue×PDCAの実践ガイド
+- `docs/git-github-beginner-guide.md` - Git/GitHub初心者ガイド
+- `docs/environment-setup-guide.md` - 環境セットアップガイド
 
 ---
 
-## 🔧 運用フロー
+## 🔄 定期監査
 
-### 日常運用
-1. **GitHub Issue/PR作成** → 自動的にNotion Tasksへ同期
-2. **Notion Logs DBで同期結果確認**（直近7日ビュー）
-3. **Metrics DBでsuccessRate確認**（週次推移）
-4. **SLO未達時**: 自動起票されたIssueで原因調査
+**次回監査予定**: 2026年1月12日（3ヶ月後）
 
-### 週次運用（月曜日UTC 01:00-03:00）
-1. **Registry更新** → Notion Hub配下をスキャン
-2. **自動タグ付け** → 未分類ページにautoTag提案
-3. **クリーンアップ提案** → 60日超/Temp/Otherを候補登録
-4. **週次レポート** → 直近7日の集計をMetrics DBへ
-5. **レビュー**: Cleanup Queue DBでproposed候補を確認→approved/rejected
-
-### データ整備（初回のみ）
-1. **バックフィル実行**: GitHub Actions → `Backfill ghAssignees/ghDue` → Run workflow
-   - Input: `limit=20`（テスト）→ 確認後に`limit=50`
+### 監査項目
+- [ ] ルール総行数（目標: 500行以下）
+- [ ] 動画思想との照合
+- [ ] 非エンジニア視点でのレビュー
+- [ ] 新たな過剰実装の検出
 
 ---
 
-## 🛡️ 安全設計
+## 🚀 今後の拡張（必要に応じて）
 
-### 非破壊原則
-- **クリーンアップ**: 提案→承認→14日保留→archive→30日後削除（参照なし確認後）
-- **双方向**: preview_onlyデフォルト、実適用は手動承認必須
-- **冪等性**: Notion同期はghIssueNumber照合でPATCH/POST判定
+### 短期（1-2週間）
+- [ ] Notion MCP設定
+- [ ] @Docs試験導入（3-5件）
 
-### 権限最小化
-- **Notion**: Integrationは必要DBのみ共有
-- **GitHub Actions**: 各workflowで`contents: read`基本、書き込みは最小限（issues: write等）
+### 中期（1-3ヶ月）
+- [ ] Cursor 1.7 Hooks機能評価
+- [ ] MCPエコシステム活用
 
-### ロールバック
-- **workflow無効化**: PRでファイル削除またはcron無効化
-- **Notion復元**: 履歴から復元（30日以内）
-- **GitHub復元**: 誤ラベル/assigneesの手動削除
-
----
-
-## 📊 監視ポイント
-
-### 日次確認
-- [ ] Logs DBで`result=failure`増加がないか
-- [ ] Metrics DBのsuccessRate >= 99%
-- [ ] HTTP 4xx（権限）/5xx（障害）の頻度
-
-### 週次確認
-- [ ] 週次レポートの`successRate`推移
-- [ ] Cleanup Queue DBの候補レビュー
-- [ ] SLO未達Issueの有無（あれば原因調査）
-
----
-
-## 🔗 関連リンク
-
-- **GitHub Repository**: https://github.com/Driedsandwich/aidd-integration-system
-- **Notion Hub**: https://www.notion.so/PIMS-MCP-Hub-26f867232af9814c91dbcc3498ccc33b
-- **完了レポート**: [docs/completion-report-2025-10-11.md](docs/completion-report-2025-10-11.md)
+### 長期（3ヶ月〜）
+- [ ] Team Rules評価（組織展開時）
+- [ ] 定期監査の継続実施
 
 ---
 
@@ -184,4 +270,16 @@ MIT License - 詳細は [LICENSE](LICENSE) を参照
 
 ## 🙏 謝辞
 
-本システムは、Cursor/MCP、GitHub Actions、Notion APIを活用し、AI駆動開発の実践知見を蓄積・活用するために構築されました。
+本ワークスペースは、以下の知見・ツールに基づいて構築されています：
+
+- **YouTube動画**: 「AI駆動開発を10倍快適にする」（2024/06/27）
+- **Cursor**: AI駆動コードエディタ
+- **MCP**: Model Context Protocol
+- **GitHub**: Issue管理、Git履歴管理
+- **Notion**: データ保存・可視化（MCP経由）
+
+---
+
+**最終更新**: 2025年10月12日  
+**メンテナー**: Driedsandwich  
+**開発環境**: Cursor 1.7.44 + Claude Sonnet 4.5
