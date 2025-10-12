@@ -8,109 +8,90 @@ alwaysApply: true
 
 ## 基本原則
 
-### ✅ 必須ルール
-
 1. **機密情報を絶対にコミットしない**
    - APIキー、パスワード、トークンは`.env`に記載
    - `.gitignore`で`.env`を必ず除外
-   - すでにコミットした場合は即座に無効化
 
 2. **小さく頻繁にコミット**
-   - AIの変更ごとにコミットを検討
    - 1コミット = 1つの論理的な変更
    - 「動く状態」でコミットする
 
 3. **わかりやすいコミットメッセージ**
    - Conventional Commits形式を推奨
-   - AIが生成したコードは明記する
 
 ---
 
 ## コミットメッセージ規則
 
-### Conventional Commits形式
+### Conventional Commits
 
 ```
 <type>(<scope>): <subject>
 ```
 
-#### Type（必須）
+**Type**:
+- `feat:` 新機能
+- `fix:` バグ修正
+- `docs:` ドキュメント
+- `refactor:` リファクタリング
+- `test:` テスト
+- `chore:` 設定更新
 
-- `feat:` - 新機能追加
-- `fix:` - バグ修正
-- `docs:` - ドキュメント変更のみ
-- `refactor:` - リファクタリング
-- `test:` - テスト追加・修正
-- `chore:` - 設定ファイル更新等
-
-#### 例
-
+**例**:
 ```bash
-# ✅ 良い例
+# ✅ 良い
 feat(auth): Add JWT authentication
 fix(api): Correct validation error
-docs(readme): Update installation instructions
 
-# ✅ AI関連の例
-feat(chat): AI-generated chat interface (Cursor)
-fix(auth): Correct AI-introduced typo
+# ✅ AI関連
+feat(chat): AI-generated interface (Cursor)
 
-# ❌ 悪い例
+# ❌ 悪い
 update stuff
-fix bug
 WIP
 ```
 
-#### Issue IDを含める（任意）
-
+**Issue ID**（任意）:
 ```bash
-feat(auth): Implement OAuth login (Issue #15)
-fix(api): Resolve endpoint timeout (Issue #22)
+feat(auth): Implement OAuth (Issue #15)
 ```
 
 ---
 
 ## ブランチ戦略
 
-### ブランチ命名規則
-
+### 命名規則
 ```
-<type>/<short-description>
+<type>/<description>
 ```
 
-- `feature/` - 新機能
-- `fix/` - バグ修正
-- `docs/` - ドキュメント
-- `issue/` - Issue対応
+**例**: `feature/user-auth`, `fix/login-bug`, `issue-15-oauth`
 
 ### ソロ開発フロー
-
 ```
-main（常に動く状態を保つ）
-  ├─ feature/new-feature（実験的な変更）
-  └─ fix/bug-fix（緊急修正）
+main（常に動く状態）
+  ├─ feature/new-feature
+  └─ fix/bug-fix
 ```
 
-1. 新機能・実験: `feature/`ブランチを作成
-2. 動作確認後: mainにマージ
-3. ブランチ削除: 不要になったブランチは削除
+1. ブランチ作成
+2. 実装・コミット
+3. 動作確認
+4. mainにマージ
+5. ブランチ削除
 
 ---
 
 ## .gitignore設定
 
-### 必須項目
-
 ```gitignore
 # 環境変数・機密情報
 .env
 .env.local
-.env.*.local
 *.key
-*.pem
 secrets/
 
-# OS関連
+# OS
 .DS_Store
 Thumbs.db
 
@@ -122,7 +103,6 @@ Thumbs.db
 # 依存関係
 node_modules/
 __pycache__/
-*.pyc
 venv/
 .venv/
 
@@ -130,29 +110,24 @@ venv/
 dist/
 build/
 *.log
-
-# プロジェクト一時ファイル
 .temp/
-temp/
 ```
 
 ---
 
 ## GitHub Issue活用
 
-### Issue作成（推奨）
-
-大きな作業や実験的な変更は、Issueで管理：
+大きな作業はIssueで管理：
 
 ```bash
 # Issue作成
-gh issue create --title "新機能の実装" --body "詳細..."
+gh issue create --title "新機能" --body "詳細..."
 
 # Issue確認
 gh issue view 15
 
 # ブランチ作成
-git checkout -b issue-15-implement-feature
+git checkout -b issue-15-feature
 
 # 実装・コミット
 git commit -m "feat: Implement feature (Issue #15)"
@@ -166,108 +141,78 @@ gh issue close 15
 
 ---
 
-## よくあるミス・対策
+## よくあるミス
 
-### ❌ NG: APIキーをコミット
-
+### ❌ APIキーをコミット
 ```javascript
-// ❌ 絶対にやらない
-const apiKey = "sk-ant-xxxxxxxxxxxxx";
+// ❌ NG
+const key = "sk-ant-xxx";
 
-// ✅ 環境変数を使う
-const apiKey = process.env.ANTHROPIC_API_KEY;
+// ✅ OK
+const key = process.env.API_KEY;
 ```
 
-### ❌ NG: 巨大なコミット
-
+### ❌ 巨大なコミット
 ```bash
-# ❌ 悪い例（複数の変更が混在）
-git commit -m "update stuff"
+# ❌ NG: 複数の変更を1つに
+git commit -m "update"
 
-# ✅ 良い例（小さく分割）
-git commit -m "feat(auth): Add JWT authentication"
+# ✅ OK: 小さく分割
+git commit -m "feat(auth): Add JWT"
 git commit -m "fix(api): Correct validation"
-git commit -m "docs(readme): Update API docs"
 ```
 
-### ❌ NG: mainブランチで直接作業
-
+### ❌ mainで直接作業
 ```bash
-# ❌ 悪い例
-# mainブランチで実験的なコードを書く
-
-# ✅ 良い例
-# feature/experimentブランチで作業
-# → 失敗しても簡単に破棄できる
+# ❌ NG: mainで実験
+# ✅ OK: feature/ブランチで作業
 ```
 
 ---
 
 ## 緊急時の対処
 
-### 間違えてAPIキーをコミットした
+### APIキーをコミットした
+1. 即座にAPIキーを無効化
+2. 新しいAPIキーを発行
+3. コミット取り消し: `git reset HEAD~1`
 
-1. **即座にAPIキーを無効化**（各サービスのダッシュボード）
-2. **新しいAPIキーを発行**
-3. **コミットから削除**（まだプッシュしていない場合）:
-   ```bash
-   git reset HEAD~1
-   ```
-
-### AIが大量のファイルを削除した
-
-1. **GitHub Desktopで確認**
-2. **意図的でなければ「Discard Changes」**
-3. **すでにコミットした場合**:
-   ```bash
-   # 該当コミットを取り消し
-   git revert <commit-hash>
-   ```
+### AIがファイルを削除した
+1. GitHub Desktopで確認
+2. 「Discard Changes」で復元
+3. コミット済み: `git revert <hash>`
 
 ---
 
 ## チェックリスト
 
 ### コミット前
-
-- [ ] `.env`ファイルが含まれていない
-- [ ] APIキー等の機密情報がコード内にない
-- [ ] コミットメッセージは明確
-- [ ] 1コミット = 1つの論理的な変更
+- [ ] `.env`が含まれていない
+- [ ] 機密情報がない
+- [ ] メッセージが明確
 - [ ] 動作確認済み
-
-### プッシュ前
-
-- [ ] 個人情報が含まれていない
-- [ ] 不要なログファイルが含まれていない
-- [ ] 大きなバイナリファイルがない
 
 ---
 
 ## AI駆動開発での実践
 
-### 推奨ワークフロー
-
 ```
 1. Cursorに自然言語で指示
-   「ユーザー認証機能を追加してください」
    ↓
-2. Cursorがコードを書く
+2. コード生成
    ↓
-3. GitHub Desktopで差分を確認
+3. GitHub Desktopで差分確認
    ↓
-4. コミット（Conventional Commits形式）
+4. コミット（Conventional Commits）
    ↓
-5. 必要に応じてIssueで管理
+5. 大きな作業はIssueで管理
 ```
 
 ### AI時代のGit哲学
 
-> 「AIは強力な協力者だが、完璧ではない。  
-> Gitは、AIとの共同作業を安全にし、  
-> 失敗から学び、成功を積み重ねるための基盤である。」
+> AIは強力な協力者だが、完璧ではない。  
+> Gitは、AIとの共同作業を安全にする基盤である。
 
 ---
 
-**関連ドキュメント**
-- [Git/GitHub初心者ガイド](mdc:docs/git-github-beginner-guide.md)
+**関連**: [Git初心者ガイド](mdc:docs/git-github-beginner-guide.md)
