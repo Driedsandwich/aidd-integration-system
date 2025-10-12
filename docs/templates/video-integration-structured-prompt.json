@@ -1,0 +1,408 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "YouTube Video Integration Task",
+  "description": "AI Agent向けの構造化された動画統合タスク定義",
+  "type": "object",
+  "required": ["videoUrl", "projectContext", "integrationGoal"],
+  "properties": {
+    "videoUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "統合するYouTube動画のURL",
+      "example": "https://youtu.be/Uml3jEPWIKo"
+    },
+    "projectContext": {
+      "type": "object",
+      "description": "プロジェクトの基本情報",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "プロジェクト名",
+          "example": "PIMS"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "web-app",
+            "cli-tool",
+            "library",
+            "api-service",
+            "documentation"
+          ],
+          "description": "プロジェクトタイプ"
+        },
+        "customType": {
+          "type": "string",
+          "description": "カスタムプロジェクトタイプ（標準enum以外の場合）"
+        },
+        "techStack": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "使用している技術スタック",
+          "example": ["Python", "Node.js", "GitHub Actions", "Notion API"]
+        },
+        "targetAudience": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["beginner", "intermediate", "advanced", "non-engineer"]
+          },
+          "description": "対象ユーザー層"
+        },
+        "existingDocs": {
+          "type": "object",
+          "description": "既存ドキュメントの場所",
+          "properties": {
+            "guides": {
+              "type": "string",
+              "default": "docs/",
+              "description": "ガイドドキュメントのディレクトリ"
+            },
+            "rules": {
+              "type": "string",
+              "default": ".cursor/rules/",
+              "description": "Cursorルールのディレクトリ"
+            },
+            "templates": {
+              "type": "string",
+              "default": ".github/",
+              "description": "Issue/PRテンプレートのディレクトリ"
+            }
+          }
+        }
+      }
+    },
+    "integrationGoal": {
+      "type": "object",
+      "description": "統合の目的と範囲",
+      "required": ["purpose"],
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "description": "この統合で達成したいこと",
+          "example": "AI駆動開発における安全なGit運用を確立"
+        },
+        "targetUsers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "この統合の主な対象ユーザー",
+          "example": ["非エンジニア", "AIツール初心者"]
+        },
+        "keyTopics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "重点的に扱うトピック",
+          "example": ["バージョン管理", "ブランチ戦略", "機密情報管理"]
+        }
+      }
+    },
+    "deliverables": {
+      "type": "object",
+      "description": "期待する成果物",
+      "properties": {
+        "beginnerGuide": {
+          "type": "boolean",
+          "default": true,
+          "description": "初心者向けガイドを作成するか"
+        },
+        "cursorRules": {
+          "type": "boolean",
+          "default": true,
+          "description": "Cursorルールを追加/更新するか"
+        },
+        "configFiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              ".gitignore",
+              ".env.example",
+              ".dockerignore",
+              "Dockerfile",
+              "docker-compose.yml",
+              "other"
+            ]
+          },
+          "description": "更新する設定ファイル"
+        },
+        "extendExistingDocs": {
+          "type": "boolean",
+          "default": true,
+          "description": "既存ドキュメントを拡張するか"
+        },
+        "improveTemplates": {
+          "type": "object",
+          "properties": {
+            "pullRequest": {
+              "type": "boolean",
+              "default": false
+            },
+            "issue": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "description": "テンプレートを改善するか"
+        },
+        "updateReadme": {
+          "type": "boolean",
+          "default": true,
+          "description": "READMEを更新するか"
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "制約条件",
+      "properties": {
+        "fileNamingConvention": {
+          "type": "string",
+          "enum": ["kebab-case", "snake_case", "camelCase"],
+          "default": "kebab-case",
+          "description": "ファイル命名規則"
+        },
+        "language": {
+          "type": "string",
+          "enum": ["ja", "en"],
+          "default": "ja",
+          "description": "ドキュメント記述言語"
+        },
+        "useEmoji": {
+          "type": "boolean",
+          "default": true,
+          "description": "絵文字を使用するか"
+        },
+        "styleguide": {
+          "type": "string",
+          "description": "従うべきスタイルガイド"
+        },
+        "prohibitedContent": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["API keys", "passwords", "tokens", "personal info"],
+          "description": "含めてはいけない内容"
+        }
+      }
+    },
+    "executionPhases": {
+      "type": "object",
+      "description": "実行フェーズの定義",
+      "properties": {
+        "phase1_analysis": {
+          "type": "object",
+          "properties": {
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "fetch_transcript",
+                      "analyze_content",
+                      "understand_project_structure"
+                    ]
+                  },
+                  "tool": {
+                    "type": "string",
+                    "description": "使用するツール名"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              },
+              "default": [
+                {
+                  "action": "fetch_transcript",
+                  "tool": "mcp_fetch_fetch_youtube_transcript",
+                  "description": "動画トランスクリプトを取得"
+                },
+                {
+                  "action": "analyze_content",
+                  "description": "主要テーマと実践的知見を抽出"
+                },
+                {
+                  "action": "understand_project_structure",
+                  "tool": "list_dir, read_file",
+                  "description": "プロジェクト構造と命名規則を理解"
+                }
+              ]
+            }
+          }
+        },
+        "phase2_planning": {
+          "type": "object",
+          "properties": {
+            "createTodos": {
+              "type": "boolean",
+              "default": true,
+              "description": "TODOリストを作成するか"
+            },
+            "estimatedTasks": {
+              "type": "number",
+              "minimum": 1,
+              "description": "予想されるタスク数"
+            }
+          }
+        },
+        "phase3_implementation": {
+          "type": "object",
+          "properties": {
+            "sequential": {
+              "type": "boolean",
+              "default": true,
+              "description": "タスクを順次実行するか（並行実行しない）"
+            },
+            "updateTodosAfterEach": {
+              "type": "boolean",
+              "default": true,
+              "description": "各タスク完了後にTODOを更新するか"
+            }
+          }
+        },
+        "phase4_integration": {
+          "type": "object",
+          "properties": {
+            "crossLinking": {
+              "type": "boolean",
+              "default": true,
+              "description": "相互リンクを設定するか"
+            },
+            "consistencyCheck": {
+              "type": "boolean",
+              "default": true,
+              "description": "整合性チェックを実施するか"
+            }
+          }
+        },
+        "phase5_completion": {
+          "type": "object",
+          "properties": {
+            "generateReport": {
+              "type": "boolean",
+              "default": true,
+              "description": "完了報告を生成するか"
+            },
+            "suggestNextSteps": {
+              "type": "boolean",
+              "default": true,
+              "description": "次のステップを提案するか"
+            }
+          }
+        }
+      }
+    },
+    "completionCriteria": {
+      "type": "object",
+      "description": "完了基準",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "トランスクリプト分析完了",
+            "最低1つのガイド作成",
+            "READMEにリンク追加",
+            "内部リンク機能確認"
+          ]
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Cursorルール追加",
+            "設定ファイル更新",
+            "テンプレート改善"
+          ]
+        }
+      }
+    },
+    "reportFormat": {
+      "type": "object",
+      "description": "完了報告の形式",
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": ["minimal", "standard", "detailed"],
+          "default": "standard",
+          "description": "報告のスタイル"
+        },
+        "includeSections": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "created_files",
+              "updated_files",
+              "benefits",
+              "next_steps",
+              "related_links",
+              "statistics"
+            ]
+          },
+          "default": [
+            "summary",
+            "created_files",
+            "updated_files",
+            "benefits",
+            "next_steps"
+          ]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "videoUrl": "https://youtu.be/Uml3jEPWIKo",
+      "projectContext": {
+        "name": "PIMS",
+        "type": "web-app",
+        "techStack": ["Python", "Node.js", "GitHub Actions", "Notion API"],
+        "targetAudience": ["beginner", "non-engineer"],
+        "existingDocs": {
+          "guides": "docs/",
+          "rules": ".cursor/rules/",
+          "templates": ".github/"
+        }
+      },
+      "integrationGoal": {
+        "purpose": "AI駆動開発における安全なGit運用を確立",
+        "targetUsers": ["非エンジニア", "AIツール初心者"],
+        "keyTopics": ["バージョン管理", "ブランチ戦略", "機密情報管理"]
+      },
+      "deliverables": {
+        "beginnerGuide": true,
+        "cursorRules": true,
+        "configFiles": [".gitignore", ".env.example"],
+        "extendExistingDocs": true,
+        "improveTemplates": {
+          "pullRequest": true,
+          "issue": false
+        },
+        "updateReadme": true
+      },
+      "constraints": {
+        "fileNamingConvention": "kebab-case",
+        "language": "ja",
+        "useEmoji": true
+      }
+    }
+  ]
+}
+

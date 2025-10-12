@@ -104,6 +104,14 @@ Repository Settings → Secrets and variables → Actions → New repository sec
 - [AI駆動開発実践ガイド](development-docs/AI駆動開発実践ガイド.md)
 - [Issue管理実践ガイド](development-docs/Issue管理実践ガイド.md)
 - [ルール改善サイクル実践ガイド](development-docs/ルール改善サイクル実践ガイド.md)
+- [Git/GitHub初心者ガイド](docs/git-github-beginner-guide.md) - 非エンジニア向けGit入門（コマンド不要）
+- [環境変数設定ガイド](docs/environment-setup-guide.md) - APIキー・機密情報の安全な管理
+
+### YouTube動画統合テンプレート
+- **[GitHub: youtube-video-integration-templates](https://github.com/Driedsandwich/youtube-video-integration-templates)** 🔗
+- **[すぐ使えるプロンプト](docs/templates/SIMPLE_PROMPT.md)** ⚡ - 基本版（コピペで即実行）
+- [テンプレート詳細](docs/templates/) - 4段階のテンプレート（30秒版/1分版/5分版/JSON版）
+- _Author: Driedsandwich / Created with Cursor (Claude Sonnet 4.5)_
 
 ---
 
