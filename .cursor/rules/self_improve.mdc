@@ -19,6 +19,12 @@ alwaysApply: true
   - Monitor test patterns and coverage
 
 - **Rule Updates:**
+  - **3-Stage Update Process (ACE-based):**
+    - **Reflect**: Analyze what worked, what failed, what should improve
+    - **Generate Delta**: Identify specific changes (which file, which section, what content)
+    - **Apply**: Use search_replace for targeted updates (avoid full rewrites)
+    - Detailed guide: [implementation.mdc](mdc:.cursor/rules/implementation.mdc)
+  
   - **Add New Rules When:**
     - A new technology/pattern is used in 3+ files
     - Common bugs could be prevented by a rule
