@@ -6,12 +6,27 @@
 
 ## 🆕 最新更新（2025-10-12）
 
-**最小構成原則を確立**：MCP設定での試行錯誤から学んだ教訓を、開発全般に適用できる原則として体系化しました。
+### 1. 最小構成原則を確立
+
+MCP設定での試行錯誤から学んだ教訓を、開発全般に適用できる原則として体系化しました。
 
 - ✅ **原則確立**: 「最小限で開始 → 必要に応じて拡張」
 - ✅ **3つのルールに統合**: general.mdc、implementation.mdc、knowledge.mdc
 - ✅ **実践ガイド**: 具体例、判断フロー、チェックリスト
 - 📄 **詳細報告**: [最小構成原則確立プロジェクト完了報告](docs/2025-10-12-minimal-configuration-establishment.md)
+
+### 2. コンテキストエンジニアリング理論を統合
+
+Stanford発表のACE（Agentic Context Engineering）論文・最新動画から重要概念を統合しました。
+
+- ✅ **コンテキスト崩壊の認識**: 一括書き換えで情報が失われる問題
+- ✅ **3段階プロセス**: Reflect（振り返り）→ Delta（差分生成）→ Apply（適用）
+- ✅ **差分更新の原則**: ファイル全体の書き換えを避け、必要な部分のみ更新
+- 📄 **分析報告**: [ACE新動画分析レポート](docs/2025-10-12-ace-new-video-analysis.md)
+
+**参考文献**:
+- 論文: [Agentic Context Engineering (arXiv)](https://arxiv.org/html/2510.04618v1)
+- 動画: [コンテキストエンジニアリングの基礎と最新](https://www.youtube.com/watch?v=PWOJ0QANGsA)
 
 ---
 
