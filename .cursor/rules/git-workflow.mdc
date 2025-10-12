@@ -87,11 +87,11 @@ WIP
 asdf
 ```
 
-#### TaskmasterタスクIDを含める
+#### タスクIDを含める（任意）
 
 ```bash
-feat(auth): Implement OAuth login (Task #15)
-fix(api): Resolve endpoint timeout (Task #22.3)
+feat(auth): Implement OAuth login (Issue #15)
+fix(api): Resolve endpoint timeout (Issue #22)
 ```
 
 ---
@@ -111,7 +111,7 @@ fix(api): Resolve endpoint timeout (Task #22.3)
 - `refactor/` - リファクタリング
 - `docs/` - ドキュメント
 - `test/` - テスト追加
-- `task/` - Taskmasterタスク対応
+- `issue/` - Issue対応
 
 #### 例
 
@@ -120,7 +120,7 @@ feature/user-authentication
 fix/login-timeout
 refactor/api-cleanup
 docs/update-readme
-task-15-implement-oauth
+issue-15-implement-oauth
 ```
 
 ### ブランチ運用フロー
@@ -235,9 +235,9 @@ dist/
 build/
 *.log
 
-# Taskmaster（プロジェクト固有）
-.taskmaster/reports/
-.taskmaster/temp/
+# プロジェクト一時ファイル
+.temp/
+temp/
 ```
 
 ### .env.example
@@ -313,25 +313,25 @@ git checkout -b feature/new-feature
 # 2. Pullをクリック
 ```
 
-### Taskmasterとの統合
+### GitHub Issueとの統合
 
-#### サブタスク実装時
+#### Issue実装時
 
 ```bash
-# 1. タスク確認
-task-master show 15.2
+# 1. Issue確認
+gh issue view 15
 
 # 2. ブランチ作成
-# task-15.2-implement-jwt
+git checkout -b issue-15-implement-jwt
 
 # 3. 実装 + コミット
-# feat(auth): Implement JWT token generation (Task #15.2)
+git commit -m "feat(auth): Implement JWT token generation (Issue #15)"
 
-# 4. 進捗記録
-task-master update-subtask --id=15.2 --prompt="JWTトークン生成を実装。コミット: abc123"
+# 4. 進捗記録（Issueコメント）
+gh issue comment 15 --body "JWTトークン生成を実装。コミット: abc123"
 
 # 5. 完了時
-task-master set-status --id=15.2 --status=done
+gh issue close 15
 ```
 
 ---
