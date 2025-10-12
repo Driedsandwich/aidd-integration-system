@@ -26,7 +26,7 @@ Stanford発表のACE（Agentic Context Engineering）論文・最新動画から
 
 **参考文献**:
 - 論文: [Agentic Context Engineering (arXiv)](https://arxiv.org/html/2510.04618v1)
-- 動画: [コンテキストエンジニアリングの基礎と最新](https://www.youtube.com/watch?v=PWOJ0QANGsA)
+- 動画: [コンテキストエンジニアリングの基礎と最新](https://www.youtube.com/watch?v=PWOJ0QANGsA)（数理の弾丸）
 
 ---
 
