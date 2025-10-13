@@ -81,7 +81,7 @@
   5) 逆算スケジュール（締切2025-12-31）
 - 追加検証質問（矛盾・未決・抜けの洗い出し）：
   - 合意事項と未決事項のリスト化、矛盾点の指摘
-  - DOI/URLの正規性と入手可否
+  - DOI/URLの正規性と入手可否（全角括弧・utm除去・直リンク化）
   - 7章構成で重複しやすい論点の特定（第3/5/6章の切り分け）
   - アンケ尺度の採択・逆転項目・同意文の草案
 - 出力は `research/notes/` にMarkdown保存（出典・日付必須）
@@ -335,7 +335,7 @@ gh CLI:
   5) 逆算スケジュール（締切2025-12-31）
 - 追加検証質問（矛盾・未決・抜けの洗い出し）：
   - 合意事項と未決事項のリスト化、矛盾点の指摘
-  - DOI/URLの正規性と入手可否
+  - DOI/URLの正規性と入手可否（全角括弧・utm除去・直リンク化）
   - 7章構成で重複しやすい論点の特定（第3/5/6章の切り分け）
   - アンケ尺度の採択・逆転項目・同意文の草案
 - 出力は `research/notes/` にMarkdown保存（出典・日付必須）
@@ -367,12 +367,13 @@ master-thesis-2025/
 ├── thesis/（論文本体）
 │   ├── main.md（メイン文書、LaTeXまたはMarkdown）
 │   ├── chapters/
-│   │   ├── 01-introduction.md
-│   │   ├── 02-literature-review.md
-│   │   ├── 03-methodology.md
-│   │   ├── 04-analysis.md
-│   │   ├── 05-discussion.md
-│   │   └── 06-conclusion.md
+│   │   ├── 01-introduction.md（はじめに）
+│   │   ├── 02-context.md（現状把握・環境認識）
+│   │   ├── 03-literature-review.md（先行研究レビュー）
+│   │   ├── 04-methodology-survey.md（調査：アンケ／ヒアリング）
+│   │   ├── 05-analysis.md（発見事実の分析）
+│   │   ├── 06-discussion.md（考察）
+│   │   └── 07-conclusion.md（おわりに）
 │   ├── figures/（図表）
 │   └── references.bib（文献リスト、BibTeX形式）
 ├── research/（調査資料）
@@ -393,7 +394,7 @@ master-thesis-2025/
 
 ### Step 3: GitHub Issue #1作成（5分）
 
-**タイトル**: 論文構成とチャプター計画策定
+**タイトル**: 論文構成（7章暫定・増減可）とチャプター計画策定
 
 **本文**:
 ```markdown
@@ -405,7 +406,7 @@ master-thesis-2025/
 ～柔軟性・多様性・持続可能性に着目した実証的検討～
 
 ## ✅ 成果基準
-- [ ] 論文全体構成の確定（6章構成）
+- [ ] 論文全体構成の確定（7章暫定・増減可）
 - [ ] 各章の詳細概要決定
 - [ ] 文献調査方針の策定
 - [ ] 執筆スケジュール作成
@@ -586,6 +587,34 @@ git checkout -b ai-chatgpt-suggestions
 - 事実は一次情報で裏取り
 - 未検証は「仮説」と明記
 - PR/IssueにエビデンスURLを添付
+
+### 引用運用（BibTeX + Pandoc）
+- `references.bib` にBibTeX形式で文献登録（DOI/URL必須、utm除去）
+- 章テキスト内で `[@citekey]` 形式で引用
+- `apa.csl` をプロジェクトルートに配置（APA形式、大学指定CSLがあれば差替え）
+- 最終Word出力時にPandocが自動で引用・参考文献生成
+
+---
+
+## 🎯 Word出力（最終提出用）
+
+### 出力手順（Pandoc使用）
+```bash
+# 基本形（APA形式、テンプレなし）
+pandoc thesis/main.md --from gfm --to docx --citeproc --csl=apa.csl --bibliography=thesis/references.bib -o out/thesis-2025-12-31.docx
+
+# 大学テンプレ使用版（reference-doc指定）
+pandoc thesis/main.md --from gfm --to docx --citeproc --csl=apa.csl --bibliography=thesis/references.bib --reference-doc=template.dotx -o out/thesis-2025-12-31.docx
+```
+
+### 前提
+- Pandocインストール済み（`choco install pandoc` または公式サイト）
+- `apa.csl` 配置済み（https://www.zotero.org/styles/apa から取得可）
+- 大学指定Wordテンプレ（.dotx）があれば `reference-doc` に指定
+
+### 検証
+- Word出力後、図表番号・引用形式・ページ設定を目視確認
+- 必要に応じてWord上で微調整（フォント・余白・ヘッダー等）
 
 ---
 
