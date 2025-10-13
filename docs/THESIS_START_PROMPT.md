@@ -18,6 +18,7 @@
 **分野**: 文系・社会学系
 **提出期限**: 2025-12-31
 **現在の進捗**: 未着手
+**章構成**: 7章（暫定、必要に応じて増減可）
 
 ---
 
@@ -98,12 +99,13 @@ master-thesis-2025/
 ├── thesis/（論文本体）
 │   ├── main.md（または main.tex）
 │   ├── chapters/
-│   │   ├── 01-introduction.md
-│   │   ├── 02-literature-review.md
-│   │   ├── 03-methodology.md
-│   │   ├── 04-analysis.md
-│   │   ├── 05-discussion.md
-│   │   └── 06-conclusion.md
+│   │   ├── 01-introduction.md（はじめに）
+│   │   ├── 02-context.md（現状把握・環境認識）
+│   │   ├── 03-literature-review.md（先行研究レビュー）
+│   │   ├── 04-methodology-survey.md（調査：アンケ／ヒアリング）
+│   │   ├── 05-analysis.md（発見事実の分析）
+│   │   ├── 06-discussion.md（考察）
+│   │   └── 07-conclusion.md（おわりに）
 │   ├── figures/（図表）
 │   └── references.bib（文献リスト）
 ├── research/（調査資料）
@@ -133,13 +135,14 @@ master-thesis-2025/
 - [ ] 文献調査の方針決定
 - [ ] 執筆スケジュール策定
 
-## 📊 予定している章構成（仮）
-1. 序論
-2. 先行研究レビュー
-3. 研究方法
-4. 分析・考察
-5. 討論
-6. 結論
+## 📊 予定している章構成（暫定・増減可）
+1. はじめに
+2. 現状把握・環境認識
+3. 先行研究レビュー
+4. 調査（アンケ／ヒアリング）
+5. 発見事実の分析
+6. 考察
+7. おわりに
 
 ## 🤖 AI活用方針
 - 構成提案: Cursor、ChatGPT、Claude
@@ -162,7 +165,7 @@ gemini-perspectives（Geminiの視点）
 
 # 章別ブランチ
 chapter-01-introduction
-chapter-02-literature
+chapter-02-context
 （各章ごと）
 ```
 
@@ -185,7 +188,7 @@ chapter-02-literature
 「日本型経営における戦略的人的資源管理の再構築試論」について、
 以下を提案してください：
 
-1. 詳細な章構成（6章の具体的内容）
+1. 詳細な章構成（7章の具体的内容、必要に応じて増減可）
 2. 各章で扱うべきトピック
 3. 必要な先行研究の方向性
 4. 分析手法の候補
@@ -494,6 +497,8 @@ git checkout -b ai-chatgpt-suggestions
 
 ## 📥 既存資料の導入（Step 7）
 
+汚染防止のため、既存資料の取り込みは「新しいCursorのチャット」で実施してください（本チャットは基盤維持用）。新チャットを開き、以下の手順をそのまま依頼して実行します。
+
 既に存在する資料（ChatGPTとの討論ログ、指導教官の提言ファイル、メモ等）を取り込み、AIが参照できる形に統合します。
 
 ### 目的
@@ -502,11 +507,13 @@ git checkout -b ai-chatgpt-suggestions
 - ハルシネーション回避（一次情報の明示）
 
 ### 作業手順
-1. `research/notes/` に既存メモを配置（Markdown推奨）
+1. `research/notes/` に既存メモを配置（Markdown推奨、先頭に出典・日付）
 2. `drafts/` にAIとの討論ログを配置（出典・日付を先頭に明記）
 3. 指導教官の提言は `research/notes/supervisor-advice.md` に集約
 4. 重要一次情報は `research/literature/` または `references.bib` に登録
-5. 章ごとに関連資料をIssueへリンク（根拠の紐付け）
+5. GoogleフォームのアンケートはHTML/PDF/コピペで取得し `research/data/forms/` に保存。要約を `research/notes/` にMarkdownで作成。
+6. 参考テンプレ「健康経営論文」（.docx/.pdf）は `research/literature/health-management-2023.docx|.pdf` として保存（構成テンプレ参照用途、逐語流用しない）。
+7. 章ごとに関連資料をIssueへリンク（根拠の紐付け）
 
 ### 最低限のテンプレート
 ```markdown
@@ -527,6 +534,17 @@ git checkout -b ai-chatgpt-suggestions
 - [示唆1]
 - [示唆2]
 **検証状況**: 未検証/検証済（根拠: [URL]）
+```
+
+### ChatGPTへの自己報告依頼テンプレ（新チャットで貼付）
+```
+これまでの本プロジェクトのチャット全体から、
+1) 最新かつ合意済みの7章構成（目的・主要トピック・想定アウトカム）
+2) 指導教官提言（優先順位・出典メッセージ参照）
+3) 必ず引用候補トップ20（カテゴリ別、著者・年・DOI/URL）
+4) アンケA/B/C設計草案（尺度・サンプリング・倫理）
+5) リスクと週次逆算スケジュール（2025-12-31締切）
+を一次出典（該当メッセージID/スレッド/日付）付きで自己報告してください。
 ```
 
 ### 参照ルール
