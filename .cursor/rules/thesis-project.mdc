@@ -13,6 +13,7 @@ alwaysApply: false
 - **Issue #4**: Issue作成タイミング判断ミス（失敗事例・AI学習）
 - **Issue #5**: 残存タスク検証（タスク管理）
 - **Issue #6**: ファイル作成時のパス指定ミス（失敗事例・AI学習）
+- **Issue #7**: ディレクトリ作成失敗による構造歪み（失敗事例・AI学習）
 - 新たな失敗・学習は独立Issueとして作成
 - Issue間の相互参照を明記
 - 判断基準: 性質が異なる/他AI参照/再利用性/検索対象のいずれか該当で作成
@@ -78,6 +79,23 @@ alwaysApply: false
   - Issue内リンクをクリックして404エラーチェック
 - **適用**: 全ファイル作成操作
 - **詳細**: [Issue #6](https://github.com/Driedsandwich/master-thesis-2025/issues/6)
+
+#### 失敗事例 #5: ディレクトリ作成失敗による構造歪み（2025-10-13）
+- **原因**: Move-Item実行時、移動先ディレクトリ未作成→ファイルとして作成
+- **具体的ミス**: shrm, ai-summaries がファイルになり、29ファイルが散在
+- **影響**: SHRM文献25件が散在、検索性低下、他AI参照困難
+- **根本原因**:
+  - ディレクトリ事前作成の省略
+  - Move-Itemの挙動理解不足
+  - 移動後の型チェック不足
+  - エラーハンドリング欠如
+- **再発防止**:
+  - New-Item -ItemType Directory を先に実行
+  - PSIsContainer で型チェック
+  - -ErrorAction Stop でエラー即停止
+  - 移動後のファイル数確認
+- **適用**: 全ファイル移動操作
+- **詳細**: [Issue #7](https://github.com/Driedsandwich/master-thesis-2025/issues/7)
 
 ### **基盤整備の完了条件**
 
