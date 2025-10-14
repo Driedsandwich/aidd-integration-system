@@ -42,6 +42,22 @@ alwaysApply: false
   - タスク完了と同時にIssue更新を実行（セット化）
   - todo_write と mcp_github_add_issue_comment を並行実行
 - **適用**: 全タスク完了時
+- **詳細**: [Issue #2](https://github.com/Driedsandwich/master-thesis-2025/issues/2)
+
+#### 失敗事例 #3: Issue作成タイミングの判断ミス（2025-10-13）
+- **原因**: 失敗事例・PDCAを独立Issueとして作成すべきところ、Issue #1のコメントに追記
+- **影響**: Issue #1の肥大化、検索性低下、他AI参照困難
+- **根本原因**:
+  - Issue作成基準の不明確さ
+  - 「Issue作成は大袈裟」という思い込み
+  - 他AI協調への配慮不足
+- **再発防止**:
+  - Issue作成判断基準を確立（性質が異なる/他AI参照/再利用性/検索対象）
+  - 失敗発見→即座に独立Issue作成
+  - Phase完了→即座にPDCA Issue作成
+  - 判断に迷ったら「作成する」を選択
+- **適用**: 全フェーズ、全タスク
+- **詳細**: [Issue #4](https://github.com/Driedsandwich/master-thesis-2025/issues/4)
 
 ### **基盤整備の完了条件**
 
