@@ -1,0 +1,292 @@
+---
+description: AI駆動開発におけるGit/GitHub運用ルール（シンプル版）
+globs: **/*
+alwaysApply: true
+---
+
+# Git/GitHub運用ルール
+
+## 基本原則
+
+1. **機密情報を絶対にコミットしない**
+   - APIキー、パスワード、トークンは`.env`に記載
+   - `.gitignore`で`.env`を必ず除外
+
+2. **小さく頻繁にコミット**
+   - 1コミット = 1つの論理的な変更
+   - 「動く状態」でコミットする
+
+3. **わかりやすいコミットメッセージ**
+   - Conventional Commits形式を推奨
+
+---
+
+## コミットメッセージ規則
+
+### Conventional Commits
+
+```
+<type>(<scope>): <subject>
+```
+
+**Type**:
+- `feat:` 新機能
+- `fix:` バグ修正
+- `docs:` ドキュメント
+- `refactor:` リファクタリング
+- `test:` テスト
+- `chore:` 設定更新
+
+**例**:
+```bash
+# ✅ 良い
+feat(auth): Add JWT authentication
+fix(api): Correct validation error
+
+# ✅ AI関連
+feat(chat): AI-generated interface (Cursor)
+
+# ❌ 悪い
+update stuff
+WIP
+```
+
+**Issue ID**（任意）:
+```bash
+feat(auth): Implement OAuth (Issue #15)
+```
+
+---
+
+## ブランチ戦略
+
+### 命名規則
+```
+<type>/<description>
+```
+
+**例**: `feature/user-auth`, `fix/login-bug`, `issue-15-oauth`
+
+### ソロ開発フロー
+```
+main（常に動く状態）
+  ├─ feature/new-feature
+  └─ fix/bug-fix
+```
+
+1. ブランチ作成
+2. 実装・コミット
+3. 動作確認
+4. mainにマージ
+5. ブランチ削除
+
+---
+
+## .gitignore設定
+
+```gitignore
+# 環境変数・機密情報
+.env
+.env.local
+*.key
+secrets/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# エディター
+.vscode/
+.idea/
+*.swp
+
+# 依存関係
+node_modules/
+__pycache__/
+venv/
+.venv/
+
+# ビルド成果物
+dist/
+build/
+*.log
+.temp/
+```
+
+---
+
+## GitHub Issue活用
+
+大きな作業はIssueで管理：
+
+```bash
+# Issue作成
+gh issue create --title "新機能" --body "詳細..."
+
+# Issue確認
+gh issue view 15
+
+# ブランチ作成
+git checkout -b issue-15-feature
+
+# 実装・コミット
+git commit -m "feat: Implement feature (Issue #15)"
+
+# 進捗報告
+gh issue comment 15 --body "実装完了"
+
+# 完了時
+gh issue close 15
+```
+
+---
+
+## よくあるミス
+
+### ❌ APIキーをコミット
+```javascript
+// ❌ NG
+const key = "sk-ant-xxx";
+
+// ✅ OK
+const key = process.env.API_KEY;
+```
+
+### ❌ 巨大なコミット
+```bash
+# ❌ NG: 複数の変更を1つに
+git commit -m "update"
+
+# ✅ OK: 小さく分割
+git commit -m "feat(auth): Add JWT"
+git commit -m "fix(api): Correct validation"
+```
+
+### ❌ mainで直接作業
+```bash
+# ❌ NG: mainで実験
+# ✅ OK: feature/ブランチで作業
+```
+
+---
+
+## 緊急時の対処
+
+### APIキーをコミットした
+1. 即座にAPIキーを無効化
+2. 新しいAPIキーを発行
+3. コミット取り消し: `git reset HEAD~1`
+
+### AIがファイルを削除した
+1. GitHub Desktopで確認
+2. 「Discard Changes」で復元
+3. コミット済み: `git revert <hash>`
+
+---
+
+## チェックリスト
+
+### コミット前
+- [ ] `.env`が含まれていない
+- [ ] 機密情報がない
+- [ ] メッセージが明確
+- [ ] 動作確認済み
+
+---
+
+## GitHub記録完全性ルール
+
+### 原則: すべての変更はPR経由で記録
+
+**なぜ重要か**:
+- 変更理由が明確になる
+- レビュープロセスを経る
+- 変更履歴が追跡可能
+- プロジェクトの信頼性向上
+
+### 必須プロセス
+
+```
+1. 新規ブランチ作成
+   ↓
+2. 変更実装・コミット
+   ↓
+3. GitHub Push
+   ↓
+4. Pull Request作成（必須）
+   ↓
+5. レビュー・マージ
+```
+
+### PR作成必須項目
+
+- [ ] PR本文に変更理由を明記
+- [ ] 変更内容の概要を記載
+- [ ] 確認事項を明記
+- [ ] セキュリティチェック結果を記載
+
+### 例外ケース（禁止）
+
+❌ **直接mainブランチへのコミット**:
+- 緊急修正でも禁止
+- 小さな変更でも禁止
+- ドキュメント追加でも禁止
+
+✅ **正しい対応**:
+- すべてPR経由で実施
+- 緊急時も最小限のPRを作成
+
+### 違反時の対応
+
+1. Issue作成: 失敗事例として記録
+2. 根本原因分析
+3. 再発防止策の確立
+
+### コミット前の必須確認
+
+```bash
+# 現在のブランチを確認
+git branch --show-current
+
+# mainブランチの場合は警告
+# feature/ブランチであることを確認してからコミット
+```
+
+**チェックリスト**:
+- [ ] 現在のブランチがmainではないか
+- [ ] feature/またはdocs/ブランチで作業しているか
+- [ ] マージコンフリクト解消後、正しいブランチに戻ったか
+
+---
+
+## AI駆動開発での実践
+
+```
+1. Cursorに自然言語で指示
+   ↓
+2. コード生成
+   ↓
+3. 新規ブランチ作成
+   ↓
+4. GitHub Desktopで差分確認
+   ↓
+5. コミット（Conventional Commits）
+   ↓
+6. GitHub Push
+   ↓
+7. Pull Request作成（必須）
+   ↓
+8. レビュー・マージ
+```
+
+### AI時代のGit哲学
+
+> AIは強力な協力者だが、完璧ではない。  
+> Gitは、AIとの共同作業を安全にする基盤である。  
+> すべての変更はPR経由で記録し、透明性を確保する。
+
+---
+
+**関連**:
+- [Git初心者ガイド](mdc:docs/git-github-beginner-guide.md)
+- Issue #68: GitHub記録完全性の不備（失敗事例）

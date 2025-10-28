@@ -1,0 +1,122 @@
+---
+globs: .gitignore,.gitattributes
+description: SpecStory履歴ファイルのGit管理と統合ルール
+---
+
+# SpecStory Git統合ルール
+
+## 📁 Git管理の基本戦略
+
+### **履歴ファイルのリポジトリ管理**
+
+```bash
+# .specstory/history/をリポジトリに含める
+git add .specstory/history/
+git commit -m "Add SpecStory chat history for team collaboration"
+git push
+```
+
+### **.gitignore設定の推奨**
+
+```gitignore
+# SpecStory関連の除外設定（必要に応じて）
+# .specstory/history/private/
+# .specstory/history/temp/
+```
+
+## 🔄 コミット戦略
+
+### **履歴ファイルのコミット頻度**
+
+- 重要な技術決定の記録後は即座にコミット
+- 定期的な履歴ファイルのバックアップ
+- チーム共有のための定期的なプッシュ
+
+### **コミットメッセージの規則**
+
+```bash
+# 技術決定の記録
+git commit -m "docs(specstory): Record architecture decision for [feature]"
+
+# 問題解決の記録
+git commit -m "docs(specstory): Record solution for [issue]"
+
+# 学習内容の記録
+git commit -m "docs(specstory): Record learning process for [technology]"
+```
+
+## 📋 ブランチ戦略
+
+### **履歴ファイルのブランチ管理**
+
+- メインブランチで履歴ファイルを管理
+- フィーチャーブランチでの履歴更新は避ける
+- 履歴ファイルのマージコンフリクトを防ぐ
+
+### **履歴ファイルの保護**
+
+- 履歴ファイルの誤った削除を防ぐ
+- 重要な履歴ファイルのバックアップ
+- 履歴ファイルの整合性の維持
+
+## 🔍 履歴ファイルの検索・参照
+
+### **Git履歴での検索**
+
+```bash
+# 履歴ファイルの変更履歴を確認
+git log --oneline .specstory/history/
+
+# 特定のキーワードでの検索
+git log --grep="architecture" .specstory/history/
+
+# 特定の日付範囲での検索
+git log --since="2025-09-01" --until="2025-10-31" .specstory/history/
+```
+
+### **履歴ファイルの差分確認**
+
+```bash
+# 履歴ファイルの変更内容を確認
+git diff HEAD~1 .specstory/history/
+
+# 特定のファイルの変更履歴を確認
+git log -p .specstory/history/2025-10-23_14-52Z-githubリポジトリのリサーチ報告.md
+```
+
+## 📊 履歴ファイルの統計・分析
+
+### **履歴ファイルの統計情報**
+
+```bash
+# 履歴ファイルの数とサイズを確認
+git ls-files .specstory/history/ | wc -l
+du -sh .specstory/history/
+
+# 履歴ファイルの変更頻度を確認
+git log --oneline .specstory/history/ | wc -l
+```
+
+### **履歴ファイルの活用度分析**
+
+- 履歴ファイルの参照頻度を測定
+- 重要な決定事項の記録率を分析
+- チーム共有の効果を評価
+
+## 🚀 継続的改善
+
+### **履歴ファイルの品質向上**
+
+- 履歴ファイルの構造と内容の改善
+- 検索しやすいファイル名の規則化
+- 重要な情報のハイライト
+
+### **Git統合の最適化**
+
+- 履歴ファイルの管理プロセスの改善
+- チーム協力の効率化
+- 履歴ファイルの活用度向上
+
+---
+
+**重要**: このルールは、SpecStoryの自動生成する履歴ファイルをGitで適切に管理し、チーム全体で効果的に活用するためのガイドラインです。

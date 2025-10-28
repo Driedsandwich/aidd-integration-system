@@ -1,0 +1,230 @@
+---
+description: awesome-cursorrules導入見送り候補の管理と将来提案ルール
+alwaysApply: false
+---
+
+# Awesome-CursorRules導入見送り候補管理ルール
+
+## 🎯 目的
+
+awesome-cursorrulesの導入を見送った候補を管理し、将来の技術スタック変更やプロジェクト要件の変化に応じて適切なタイミングで提案する。
+
+## 📋 見送り候補の分類
+
+### 1. フロントエンドフレームワーク（現在非適用）
+
+#### Vue.js関連
+- **Vue 3 (Nuxt 3 Development)** - Vue 3とNuxt 3の統合開発
+- **Vue 3 (Nuxt 3, TypeScript)** - TypeScript統合
+- **Vue 3 (Composition API)** - Composition API使用
+
+**提案トリガー**: 
+- Vue.jsプロジェクトの新規開始
+- 既存プロジェクトのVue.js移行検討
+- クライアント要件でVue.js指定
+
+#### Angular関連
+- **Angular (Novo Elements)** - Novo Elements UI統合
+- **Angular (TypeScript)** - TypeScript統合
+
+**提案トリガー**:
+- Angularプロジェクトの新規開始
+- 企業要件でAngular指定
+- 大規模アプリケーション開発
+
+#### その他フロントエンド
+- **SvelteKit (RESTful API, Tailwind CSS)** - RESTful API統合
+- **SvelteKit (Tailwind CSS, TypeScript)** - TypeScript統合
+- **SvelteKit (TypeScript Guide)** - TypeScriptガイド
+- **Svelte 5 vs Svelte 4** - バージョン比較
+- **Solid.js (Basic Setup)** - 基本セットアップ
+- **Solid.js (TypeScript)** - TypeScript統合
+- **Solid.js (Tailwind CSS)** - Tailwind CSS統合
+- **Qwik (Basic Setup with TypeScript and Vite)** - TypeScript/Vite統合
+- **Qwik (with Tailwind CSS)** - Tailwind CSS統合
+
+**提案トリガー**:
+- パフォーマンス重視のプロジェクト
+- 軽量フレームワーク要件
+- 新技術の実験的導入
+
+### 2. モバイル開発（現在非適用）
+
+#### React Native
+- **React Native Expo** - Expo開発環境
+- **TypeScript (Expo, Jest, Detox)** - テスト統合
+
+#### ネイティブ開発
+- **SwiftUI Guidelines** - iOS開発
+- **UIKit Guidelines** - iOS UIKit開発
+- **Android Native (Jetpack Compose)** - Android開発
+- **Flutter Expert** - Flutter開発
+- **NativeScript** - クロスプラットフォーム開発
+
+**提案トリガー**:
+- モバイルアプリ開発プロジェクトの開始
+- クロスプラットフォーム要件
+- 既存Webアプリのモバイル化
+
+### 3. バックエンド技術（現在非適用）
+
+#### Go言語
+- **Go Backend Scalability** - スケーラブルバックエンド
+- **Go ServeMux REST API** - REST API開発
+- **Go (Basic Setup)** - 基本セットアップ
+- **Go with Fiber** - Fiber統合
+- **Go Temporal DSL** - Temporal統合
+
+#### その他バックエンド
+- **Elixir Engineer Guidelines** - Elixir開発
+- **Elixir (Phoenix, Docker)** - Phoenix/Docker統合
+- **Java (Springboot, JPA)** - Spring Boot/JPA統合
+- **Kotlin Ktor Development** - Ktor統合
+- **Laravel (PHP 8.3)** - PHP 8.3統合
+- **Laravel (TALL Stack)** - TALL Stack統合
+- **Rails 8 (Basic Setup)** - Rails 8基本セットアップ
+
+**提案トリガー**:
+- 高性能バックエンド要件
+- マイクロサービス アーキテクチャ
+- 特定言語の企業要件
+
+### 4. ブロックチェーン・暗号通貨（現在非適用）
+
+- **Solidity (Foundry)** - Foundry統合
+- **Solidity (Hardhat)** - Hardhat統合
+- **Solidity (React Blockchain Apps)** - React統合
+- **Optimize (Rell Blockchain Code)** - Rell Blockchain最適化
+
+**提案トリガー**:
+- ブロックチェーン プロジェクトの開始
+- DeFiアプリケーション開発
+- NFTプロジェクト
+- Web3統合要件
+
+### 5. 特殊用途・実験的技術（現在非適用）
+
+#### ゲーム開発
+- **Unity (C#)** - Unity C#開発
+- **DragonRuby Best Practices** - DragonRuby開発
+- **ASCII Simulation Game** - ASCIIゲーム開発
+
+#### その他特殊用途
+- **WebAssembly (Z80 Cellular Automata)** - WebAssembly開発
+- **PyQt6 (EEG Processing)** - EEG処理
+- **Plasticode (Telegram API)** - Telegram API統合
+- **R Best Practices** - R言語開発
+- **C++ Programming Guidelines** - C++開発
+
+**提案トリガー**:
+- ゲーム開発プロジェクト
+- データサイエンス/機械学習
+- 組み込みシステム開発
+- 特殊用途アプリケーション
+
+### 6. テスト・品質管理（現在非適用）
+
+#### テストフレームワーク
+- **Cypress API Testing** - APIテスト
+- **Cypress Accessibility Testing** - アクセシビリティテスト
+- **Cypress Defect Tracking** - 欠陥追跡
+- **Cypress E2E Testing** - E2Eテスト
+- **Cypress Integration Testing** - 統合テスト
+- **Playwright API Testing** - APIテスト
+- **Playwright Accessibility Testing** - アクセシビリティテスト
+- **Playwright Defect Tracking** - 欠陥追跡
+- **Playwright E2E Testing** - E2Eテスト
+- **Playwright Integration Testing** - 統合テスト
+- **Jest Unit Testing** - ユニットテスト
+- **Vitest Unit Testing** - Vitestユニットテスト
+
+#### 品質管理
+- **PR Template** - PRテンプレート
+- **QA Bug Report** - バグレポート
+- **TestRail Test Case** - テストケース管理
+- **Xray Test Case** - テストケース管理
+
+**提案トリガー**:
+- テスト自動化の導入
+- 品質管理プロセスの強化
+- CI/CDパイプラインの構築
+- 大規模チーム開発
+
+### 7. デプロイ・インフラ（現在非適用）
+
+- **Netlify** - Netlify統合
+- **Kubernetes (MkDocs Documentation)** - Kubernetes統合
+- **Linux (NVIDIA CUDA, Python)** - CUDA統合
+- **Python Containerization** - コンテナ化
+- **Tauri (Svelte, TypeScript Guide)** - Tauri統合
+- **VSCode Extension (Electron/TypeScript)** - VSCode拡張開発
+
+**提案トリガー**:
+- 本格的なデプロイ環境構築
+- コンテナ化要件
+- デスクトップアプリ開発
+- エディター拡張開発
+
+## 🔄 提案トリガーの監視
+
+### 技術スタック変更の検出
+- 新しいプロジェクトの技術要件
+- 既存プロジェクトの技術移行
+- クライアント要件の変更
+- チームスキルの拡張
+
+### プロジェクト要件の変化
+- スケール要件の変化
+- パフォーマンス要件の強化
+- セキュリティ要件の強化
+- ユーザビリティ要件の変化
+
+## 📝 提案時の考慮事項
+
+### 1. 既存ルールとの整合性
+- 現在の`.cursor/rules/`構成との適合性
+- セキュリティルールとの整合性
+- Taskmasterルールとの整合性
+
+### 2. 学習コストの評価
+- チームの技術習得コスト
+- 移行期間の影響
+- 既存コードベースへの影響
+
+### 3. 段階的導入の計画
+- パイロットプロジェクトでの試行
+- 効果測定と評価
+- 全社展開の判断
+
+## 🎯 提案フロー
+
+### Step 1: 要件分析
+1. 技術要件の詳細分析
+2. 既存技術スタックとの比較
+3. 導入メリット・デメリットの評価
+
+### Step 2: 提案準備
+1. 適切なawesome-cursorrulesルールの選択
+2. 既存ルールとの統合方法の検討
+3. 導入計画の策定
+
+### Step 3: 提案実行
+1. 技術的根拠の説明
+2. 導入計画の提示
+3. リスク評価と対策の説明
+
+## 📊 継続的改善
+
+### 定期的な見直し
+- 四半期ごとの技術トレンド分析
+- プロジェクト要件の変化監視
+- チームスキルの変化評価
+
+### 提案の最適化
+- 提案タイミングの改善
+- 提案内容の精度向上
+- 導入成功率の向上
+
+---
+
+**重要**: このルールは、awesome-cursorrulesの導入を見送った候補を管理し、将来の適切なタイミングで提案するためのものです。技術スタックの変化やプロジェクト要件の変化を継続的に監視し、最適なタイミングで提案を行います。

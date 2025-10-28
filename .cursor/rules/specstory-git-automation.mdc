@@ -1,0 +1,308 @@
+---
+description: SpecStory履歴のGit自動化スクリプトとワークフロー管理
+alwaysApply: true
+---
+
+# SpecStory履歴Git自動化ルール
+
+## 🤖 自動化の基本原則
+
+### **段階的な自動化アプローチ**
+- 手動操作から段階的に自動化へ移行
+- ユーザーの承認を得ながら安全に自動化を進める
+- 失念を防ぐための包括的な自動化システム
+
+### **安全で確実な自動化**
+- 重要な操作は必ずユーザーの承認を得る
+- 自動実行前に内容を確認・検証
+- エラー処理とロールバック機能を実装
+
+## 📋 自動化の実行条件
+
+### **1. 自動実行の条件**
+以下の条件が満たされた場合、自動実行を提案：
+
+#### **技術決定の自動化**
+```bash
+# アーキテクチャ関連の決定
+if grep -i "architecture\|design\|framework" .specstory/history/*.md; then
+    echo "🚨 重要：技術決定が記録されました"
+    echo "自動実行しますか？"
+    # ユーザー承認後に自動実行
+fi
+```
+
+#### **問題解決の自動化**
+```bash
+# エラー解決関連の記録
+if grep -i "error\|bug\|troubleshooting\|resolution" .specstory/history/*.md; then
+    echo "🔧 重要：問題解決が記録されました"
+    echo "自動実行しますか？"
+    # ユーザー承認後に自動実行
+fi
+```
+
+#### **学習内容の自動化**
+```bash
+# 学習内容関連の記録
+if grep -i "learning\|tutorial\|best practice\|新機能" .specstory/history/*.md; then
+    echo "📚 通知：学習内容が記録されました"
+    echo "自動実行しますか？"
+    # ユーザー承認後に自動実行
+fi
+```
+
+### **2. 自動実行のタイミング**
+- **即座**: 重要な技術決定・問題解決
+- **1時間後**: 学習内容・ベストプラクティス
+- **24時間後**: 日常的な会話・確認作業
+
+## 🔄 自動化の実行フロー
+
+### **Step 1: 変更検出と分析**
+```bash
+#!/bin/bash
+# SpecStory履歴の変更を検出
+CHANGED_FILES=$(git diff --name-only .specstory/history/)
+if [ -n "$CHANGED_FILES" ]; then
+    echo "📝 SpecStory履歴に変更が検出されました"
+    analyze_importance "$CHANGED_FILES"
+fi
+```
+
+### **Step 2: 重要度の判定**
+```bash
+analyze_importance() {
+    local files="$1"
+    local importance="low"
+    
+    # 高重要度のキーワードをチェック
+    if grep -i "architecture\|security\|error\|bug" $files; then
+        importance="high"
+    elif grep -i "learning\|tutorial\|best practice" $files; then
+        importance="medium"
+    fi
+    
+    echo "重要度: $importance"
+    return $importance
+}
+```
+
+### **Step 3: 自動実行の提案**
+```bash
+propose_automation() {
+    local importance="$1"
+    
+    case $importance in
+        "high")
+            echo "🚨 重要：即座にGit管理を実行しますか？"
+            echo "実行内容: コミット・プッシュ"
+            ;;
+        "medium")
+            echo "📚 通知：Git管理を実行しますか？"
+            echo "実行内容: コミット・プッシュ"
+            ;;
+        "low")
+            echo "⏰ リマインダー：Git管理を検討してください"
+            echo "実行内容: コミット（プッシュは任意）"
+            ;;
+    esac
+}
+```
+
+### **Step 4: 自動実行**
+```bash
+execute_automation() {
+    local importance="$1"
+    local message=""
+    
+    case $importance in
+        "high")
+            message="docs(specstory): Record important technical decision - $(date)"
+            ;;
+        "medium")
+            message="docs(specstory): Record learning content - $(date)"
+            ;;
+        "low")
+            message="docs(specstory): Record chat history - $(date)"
+            ;;
+    esac
+    
+    # 自動実行
+    git add .specstory/history/
+    git commit -m "$message"
+    
+    if [ "$importance" != "low" ]; then
+        git push origin main
+    fi
+    
+    echo "✅ 自動実行完了: $message"
+}
+```
+
+## 🛠️ 自動化スクリプトの実装
+
+### **1. メイン自動化スクリプト**
+```bash
+#!/bin/bash
+# specstory-auto-git.sh
+
+# 設定
+REPO_PATH="/path/to/your/repo"
+SPECSTORY_PATH="$REPO_PATH/.specstory/history"
+LOG_FILE="$REPO_PATH/specstory-automation.log"
+
+# ログ関数
+log() {
+    echo "[$(date)] $1" >> "$LOG_FILE"
+}
+
+# 変更検出
+detect_changes() {
+    cd "$REPO_PATH"
+    git diff --name-only .specstory/history/
+}
+
+# 重要度判定
+analyze_importance() {
+    local files="$1"
+    # 実装は上記のanalyze_importance関数を参照
+}
+
+# 自動実行
+execute_automation() {
+    local importance="$1"
+    # 実装は上記のexecute_automation関数を参照
+}
+
+# メイン処理
+main() {
+    log "SpecStory自動化スクリプト開始"
+    
+    changes=$(detect_changes)
+    if [ -n "$changes" ]; then
+        importance=$(analyze_importance "$changes")
+        propose_automation "$importance"
+        
+        # ユーザー承認後に実行
+        read -p "実行しますか？ (y/n): " response
+        if [ "$response" = "y" ]; then
+            execute_automation "$importance"
+            log "自動実行完了: $importance"
+        else
+            log "自動実行キャンセル"
+        fi
+    fi
+}
+
+# スクリプト実行
+main
+```
+
+### **2. 定期実行の設定**
+```bash
+# crontab設定例
+# 毎時0分に実行
+0 * * * * /path/to/specstory-auto-git.sh
+
+# 毎日午後6時に実行
+0 18 * * * /path/to/specstory-auto-git.sh
+
+# 毎週金曜日に実行
+0 17 * * 5 /path/to/specstory-auto-git.sh
+```
+
+### **3. 監視スクリプト**
+```bash
+#!/bin/bash
+# specstory-monitor.sh
+
+# ファイル監視
+inotifywait -m .specstory/history/ -e modify,create,delete |
+while read path action file; do
+    echo "📝 ファイル変更検出: $file"
+    /path/to/specstory-auto-git.sh
+done
+```
+
+## 📊 自動化の設定
+
+### **重要度の設定**
+```bash
+# 設定ファイル: specstory-config.conf
+HIGH_PRIORITY_KEYWORDS="architecture,design,security,error,bug,troubleshooting"
+MEDIUM_PRIORITY_KEYWORDS="learning,tutorial,best practice,新機能,手法"
+LOW_PRIORITY_KEYWORDS="確認,質問,テスト,実験"
+```
+
+### **自動実行の設定**
+```bash
+# 自動実行の有効/無効
+AUTO_COMMIT_ENABLED=true
+AUTO_PUSH_ENABLED=true
+AUTO_EXECUTION_DELAY=300  # 5分の遅延
+```
+
+### **通知設定**
+```bash
+# 通知方法の設定
+NOTIFICATION_METHOD="console"  # console, email, slack
+NOTIFICATION_RECIPIENTS="user@example.com"
+```
+
+## 🔍 エラー処理とロールバック
+
+### **エラー処理**
+```bash
+handle_error() {
+    local error_code="$1"
+    local error_message="$2"
+    
+    log "エラー発生: $error_code - $error_message"
+    
+    case $error_code in
+        "GIT_COMMIT_FAILED")
+            echo "❌ コミットに失敗しました"
+            git reset HEAD~1
+            ;;
+        "GIT_PUSH_FAILED")
+            echo "❌ プッシュに失敗しました"
+            git push origin main --force
+            ;;
+        *)
+            echo "❌ 予期しないエラーが発生しました"
+            ;;
+    esac
+}
+```
+
+### **ロールバック機能**
+```bash
+rollback() {
+    local commit_hash="$1"
+    
+    echo "🔄 ロールバックを実行します: $commit_hash"
+    git reset --hard "$commit_hash"
+    git push origin main --force
+    
+    log "ロールバック完了: $commit_hash"
+}
+```
+
+## 📈 継続的改善
+
+### **自動化の効果測定**
+- 手動操作の削減率
+- 自動実行の成功率
+- エラー発生率
+- ユーザー満足度
+
+### **ルールの更新**
+- 新しいキーワードの追加
+- 重要度判定基準の調整
+- 自動化タイミングの最適化
+- エラー処理の改善
+
+---
+
+**重要**: このルールは、SpecStory履歴のGit管理における失念を防ぐための包括的な自動化システムです。段階的な自動化アプローチにより、安全で確実なGit管理を実現し、ユーザーの負担を最小限に抑えます。
