@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+description: ドキュメント同期のPR方針（対象/除外/検査/テンプレ）
+globs: docs/**,.cursor/rules/**,README.md
+---
+
+# ドキュメント同期のPR方針
+
+- **目的**: リモート（GitHub）を正としつつ、欠損分の補完を安全・最小差分で行う
+
+- **対象（初回PRの原則）**
+  - **含める**: `README.md`, `docs/**`（テキスト）, `.cursor/rules/*.mdc`
+  - **除外**: 生成物/環境依存（例: `.next/`, `venv/`, `logs/`, `projects/**`, `.vscode/`）
+  - **別PR**: 依存更新や設定系（`package*.json`, 環境ローカル設定 等）
+
+- **ワークフロー**
+  1) `origin/main`起点で作業ブランチ作成
+  2) 欠損テキストのみ復元/追加（最小差分）
+  3) シークレット簡易検査実施（→別ルール参照）
+  4) Conventional Commitsでコミット（例: `docs: sync README and docs (no secrets)`）
+  5) PR作成（範囲/除外/検査手順を本文に明記）
+
+- **PR本文の要点（定型）**
+  - 目的: 欠損テキストの補完／整合
+  - 対象: `README.md`, `docs/**`, `.cursor/rules/*.mdc`
+  - 除外: 生成物/環境依存（列挙）
+  - 検査: シークレット簡易スキャン実施・結果OK
+  - 差分: 大規模整形なし（最小差分）
+
+- **参考**
+  - ルートREADME: [README.md](mdc:README.md)

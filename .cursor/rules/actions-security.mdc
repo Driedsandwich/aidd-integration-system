@@ -1,0 +1,20 @@
+---
+alwaysApply: true
+description: GitHub Actions のセキュリティ強化（usesはSHA固定、権限最小化）
+globs: .github/workflows/**
+---
+
+# GitHub Actions のセキュリティ強化
+
+- **目的**: CI実行時の攻撃面縮小（サプライチェーン対策）
+
+- **原則**
+  - `uses: owner/repo@xxxxxxxx` は**完全SHA固定**（`@v*`タグ禁止）
+  - `permissions:` は最小権限（必要スコープのみ許可）
+  - `actions/checkout` は `persist-credentials: false` を検討
+  - 外部Actionは信頼済みの限られたものに限定
+
+- **レビュー時チェック**
+  - すべての`uses:`がSHA固定か
+  - 不要な権限が付与されていないか
+  - 秘密情報をlogsに出力していないか
