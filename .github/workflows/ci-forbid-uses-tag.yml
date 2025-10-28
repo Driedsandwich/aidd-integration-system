@@ -1,0 +1,31 @@
+name: CI - Forbid uses @v* (require pinned SHA)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout (pinned)
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          persist-credentials: false
+
+      - name: Fail when any uses references @v*
+        shell: bash
+        run: |
+          set -euo pipefail
+          hits=$(grep -RInE "^\s*uses: .*@v[0-9]" .github/workflows || true)
+          if [ -n "$hits" ]; then
+            echo "Found forbidden uses tags:" >&2
+            echo "$hits" >&2
+            exit 1
+          fi
+          echo "No forbidden uses tags detected."
+
+
